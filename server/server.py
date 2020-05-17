@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import serial
 
 # Constants
@@ -7,6 +8,7 @@ SERVER_HOST = '0.0.0.0'
 
 # Initialize app
 app = Flask(__name__)
+CORS(app)
 
 # Initialize serial
 s = serial.Serial()
@@ -37,8 +39,9 @@ def set_thresholds():
 def get_thresholds():
     try:
         s.write("thresholds".encode())
-        serial_response = s.readline()
-        return { 'message': "Current Thresholds: " + serial_response.decode().strip() }
+        s_resp = s.readline().decode().strip()
+        return { 'message': "Current Thresholds: " + s_resp,
+                 'values': [int(x) for x in s_resp.split(',')]}
     except Exception as e:
         return jsonify({ 'message': str(e) })
 

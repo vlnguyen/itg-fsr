@@ -1,25 +1,15 @@
 .App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  height: 100vh;
+  padding-top: 20px;
+  
+  color: white;
+  background-color: #282c34;
+}
+
+.App-header {
   font-size: calc(10px + 2vmin);
   color: white;
 }
@@ -28,11 +18,53 @@
   color: #61dafb;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.App-image {
+  width: 100%;
+}
+
+.App input[type=number] {
+  width: 80px;
+  font-weight: bold;
+  color: white;
+  background-color: #343c47;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  
+  grid-template-columns: 1fr 1fr 1fr;
+  padding-bottom: 20px;
+}
+
+.grid>* {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding: 8px;
+  color: white;
+  box-shadow: inset 0 0 0 1px #fff;
+}
+.grid input {
+  text-align: center;
+}
+
+.grid__leftArrow input{
+  align-self: flex-end;
+}
+
+.grid__rightArrow input {
+  align-self: flex-start;
+}
+
+.grid__verticalArrow input{
+  align-self: center;
 }
