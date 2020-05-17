@@ -33,7 +33,7 @@ class SensorState {
             user_threshold_(kDefaultThreshold),
             offset_(offset) {}
 
-    // Fetches the sensor value and maybe triggers the button press/release.
+        // Fetches the sensor value and maybe triggers the button press/release.
         void EvaluateSensor(int joystick_num) {
             cur_value_ = analogRead(pin_value_);
             if (cur_value_ >= user_threshold_ + kPaddingWidth &&
@@ -104,14 +104,18 @@ class SerialProcessor {
                 size_t bytes_read = Serial.readBytesUntil('\n', buffer_, kBufferSize - 1);
                 buffer_[bytes_read] = '\0';
 
-                if (strcmp(buffer_, "sens") == 0) {
+                if (strcmp(buffer_, "pressures") == 0) {
                     OutputCurrentPressures();
+                    return;
+                }
+                
+                if (strcmp(buffer_, "thresholds") == 0) {
+                    OutputCurrentThreshholds();
                     return;
                 }
 
                 char* strSens;
                 int index;
-
                 for (index = 0; index < kNumSensors; index++) {
                     if (index == 0) {
                         strSens = strtok(buffer_, ",");
@@ -119,27 +123,33 @@ class SerialProcessor {
                     else {
                         strSens = strtok(NULL, ",");
                     }
-
+                    
                     unsigned int newThreshhold = strtoul(strSens, nullptr, 10);
                     kSensorStates[index].UpdateThreshold(newThreshhold);
-
-                    char message[32];
-                    sprintf(message, "UPDATING PIN %d: %d", index, newThreshhold);
-                    Serial.println(message);
                 }
-                Serial.println("");
             }
         }
 
         void OutputCurrentPressures() {
-            int index;
-            for (index = 0; index < kNumSensors; index++) {
-                char message[64];
-                sprintf(message, "READING PIN %d: {VALUE: %4d, THRESHOLD: %d}", 
-                    index, kSensorStates[index].GetCurValue(), kSensorStates[index].GetCurThreshold());            
-                Serial.println(message);
-            }
-            Serial.println("");
+            char message[20];
+            sprintf(message, "%d,%d,%d,%d\n", 
+                kSensorStates[0].GetCurValue(),
+                kSensorStates[1].GetCurValue(),
+                kSensorStates[2].GetCurValue(),
+                kSensorStates[3].GetCurValue()
+            );            
+            Serial.print(message);
+        }
+
+        void OutputCurrentThreshholds() {
+            char message[20];
+            sprintf(message, "%d,%d,%d,%d\n", 
+                kSensorStates[0].GetCurThreshold(),
+                kSensorStates[1].GetCurThreshold(),
+                kSensorStates[2].GetCurThreshold(),
+                kSensorStates[3].GetCurThreshold()
+            );            
+            Serial.print(message);
         }
 
     private:
