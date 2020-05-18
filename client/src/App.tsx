@@ -155,7 +155,7 @@ function App() {
         setThresholds(data.values)
         addMessageToLog(data.message, messages, setMessages,)
       })
-  }, []);
+  });
 
   if (thresholds.length === 0) {
     return (
