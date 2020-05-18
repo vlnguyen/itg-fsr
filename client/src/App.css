@@ -29,6 +29,13 @@
   background-color: #343c47;
 }
 
+.App textarea {
+  width: 75%;
+  height: 30%;
+  font-size: 16px;
+  white-space: pre-line;
+}
+
 * {
   box-sizing: border-box;
 }

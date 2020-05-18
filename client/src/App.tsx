@@ -97,17 +97,44 @@ const getPerArrowProperties = (arrow: Arrows) => {
   return { inputName: inputName, divClassName: divClassName };
 };
 
-const handleSubmit = (thresholds:number[]) => {
-  console.log(thresholds);
+const handleSetThresholds = async (
+  thresholds:number[], 
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
+    await fetch('http://192.168.1.128:5555/thresholds', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ values: thresholds })
+    })
+    .then(resp => resp.json())
+    .then(data => {
+      addMessageToLog(data.message, messages, setMessages);
+    })
+}
+
+const addMessageToLog = (
+  message: string,
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
+    const newMessages = [...messages];
+    newMessages.unshift(`[${new Date().toLocaleTimeString()}] ${message}`);
+    setMessages(newMessages);
+    console.log(newMessages);
 }
 
 function App() {
   const [thresholds, setThresholds] = useState<number[]>([]);
+  const [messages, setMessages] = useState<string[]>([]);
  
   useEffect(() => {
     fetch("http://192.168.1.128:5555/thresholds")
       .then(resp => resp.json())
-      .then(data => setThresholds(data.values))
+      .then(data => {
+        setThresholds(data.values)
+        addMessageToLog(data.message, messages, setMessages,)
+      })
   }, []);
 
   if (thresholds.length === 0) {
@@ -133,9 +160,10 @@ function App() {
         {PerArrowSensitivityInput(Arrows.DOWN, thresholds, setThresholds)}
         <div className="grid__item" />
       </div>
-      <button className="submitButton" onClick={() => handleSubmit(thresholds)}>
+      <button className="submitButton" onClick={() => handleSetThresholds(thresholds, messages, setMessages)}>
         Set Thresholds
       </button>
+      <textarea value={messages.join('\n')} />
     </div>
   );
 }
