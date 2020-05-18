@@ -160,7 +160,7 @@ function App() {
         {PerArrowSensitivityInput(Arrows.DOWN, thresholds, setThresholds)}
         <div className="grid__item" />
       </div>
-      <button className="submitButton" onClick={() => handleSetThresholds(thresholds, messages, setMessages)}>
+      <button className="setThresholdsButton" onClick={() => handleSetThresholds(thresholds, messages, setMessages)}>
         Set Thresholds
       </button>
       <textarea value={messages.join('\n')} />

@@ -44,7 +44,7 @@ body {
   margin: 0;
 }
 
-.submitButton {
+.setThresholdsButton {
   font-weight: bold;
   font-size: calc(10px + 1.5vmin);
 }
