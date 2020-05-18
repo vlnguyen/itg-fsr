@@ -107,6 +107,16 @@ const handleGetPressures = async (
     });
 }
 
+const handleGetThresholds = async (
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
+    fetch("http://192.168.1.128:5555/thresholds")
+      .then(resp => resp.json())
+      .then(data => {
+        addMessageToLog(data.message, messages, setMessages);
+    });
+}
+
 const handleSetThresholds = async (
   thresholds:number[], 
   messages: string[],
@@ -173,10 +183,13 @@ function App() {
       <button className="apiButton" onClick={() => handleSetThresholds(thresholds, messages, setMessages)}>
         Set Thresholds
       </button>
+      <textarea value={messages.join('\n')} />
       <button className="apiButton" onClick={() => handleGetPressures(messages, setMessages)}>
         Get Pressures
       </button>
-      <textarea value={messages.join('\n')} />
+      <button className="apiButton" onClick={() => handleGetThresholds(messages, setMessages)}>
+        Get Thresholds
+      </button>
     </div>
   );
 }
