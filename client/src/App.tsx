@@ -153,7 +153,7 @@ function App() {
       .then(resp => resp.json())
       .then(data => {
         setThresholds(data.values)
-        addMessageToLog(data.message, messages, setMessages,)
+        addMessageToLog(data.message, messages, setMessages)
       })
   // equivalent to componentDidMount
   // eslint-disable-next-line   
