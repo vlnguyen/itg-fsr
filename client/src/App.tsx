@@ -155,7 +155,9 @@ function App() {
         setThresholds(data.values)
         addMessageToLog(data.message, messages, setMessages,)
       })
-  });
+  // equivalent to componentDidMount
+  // eslint-disable-next-line   
+  }, []);
 
   if (thresholds.length === 0) {
     return (
