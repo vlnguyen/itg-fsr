@@ -97,6 +97,16 @@ const getPerArrowProperties = (arrow: Arrows) => {
   return { inputName: inputName, divClassName: divClassName };
 };
 
+const handleGetPressures = async (
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
+    fetch("http://192.168.1.128:5555/pressures")
+      .then(resp => resp.json())
+      .then(data => {
+        addMessageToLog(data.message, messages, setMessages);
+    });
+}
+
 const handleSetThresholds = async (
   thresholds:number[], 
   messages: string[],
@@ -160,8 +170,11 @@ function App() {
         {PerArrowSensitivityInput(Arrows.DOWN, thresholds, setThresholds)}
         <div className="grid__item" />
       </div>
-      <button className="setThresholdsButton" onClick={() => handleSetThresholds(thresholds, messages, setMessages)}>
+      <button className="apiButton" onClick={() => handleSetThresholds(thresholds, messages, setMessages)}>
         Set Thresholds
+      </button>
+      <button className="apiButton" onClick={() => handleGetPressures(messages, setMessages)}>
+        Get Pressures
       </button>
       <textarea value={messages.join('\n')} />
     </div>
