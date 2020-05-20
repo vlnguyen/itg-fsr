@@ -56,8 +56,8 @@ def get_thresholds():
     success = False
     try:
         s.write("thresholds".encode())
-
-        message = "Current Thresholds: " + s.readline().decode().strip()
+        s_resp = s.readline().decode().strip()
+        message = "Current Thresholds: " + s_resp
         values = [int(x) for x in s_resp.split(',')]
         success = True
     except Exception as e:
@@ -75,7 +75,7 @@ def get_pressures():
     success = False
     try:
         s.write("pressures".encode())        
-        message = s.readline().decode().strip()
+        message = 'Current pressures: ' + s.readline().decode().strip()
         success = True
     except Exception as e:
         message = str(e)
