@@ -10,7 +10,15 @@ enum Arrows {
   RIGHT = 3
 }
 
-function PerArrowSensitivityInput (arrow: Arrows, thresholds: number[], setThresholds: React.Dispatch<React.SetStateAction<number[]>>) {
+const ProfileControls = () => {
+  return (
+    <div className="grid__item">
+      <img src={padImage} className="App-image" alt="pad"/>
+    </div>
+  );
+}
+
+const PerArrowSensitivityInput = (arrow: Arrows, thresholds: number[], setThresholds: React.Dispatch<React.SetStateAction<number[]>>) => {
   const { inputName, divClassName } = getPerArrowProperties(arrow);
   return (
     <div className={divClassName}>
@@ -174,9 +182,7 @@ function App() {
         {PerArrowSensitivityInput(Arrows.UP, thresholds, setThresholds)}
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.LEFT, thresholds, setThresholds)}
-        <div className="grid__item">
-          <img src={padImage} className="App-image" alt="pad"/>
-        </div>
+        {ProfileControls()}
         {PerArrowSensitivityInput(Arrows.RIGHT, thresholds, setThresholds)}
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.DOWN, thresholds, setThresholds)}
