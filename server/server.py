@@ -94,8 +94,10 @@ def get_all_profiles():
     profile_id = request.args.get('id')
     if profile_id:
         profiles = db_select_profile_by_id(conn, profile_id)
-        message = f'Retrieved profile: {profiles[0][1]}.'
-
+        if profiles == []:
+            message = f'No profile found with id = {profile_id}.'
+        else:
+            message = f'Retrieved profile: {profiles[0][1]}.'
     else:
         profiles = db_select_all_profiles(conn)
         message = "Retrieved all profiles."
@@ -167,7 +169,6 @@ def db_select_profile_by_id(conn, profile_id):
         c.execute(query_select_profile_by_id, (profile_id,))
 
         rows = c.fetchall()
-        print([row for row in rows])
     except Error as e:
         print(e)
     return rows
@@ -180,7 +181,6 @@ def db_select_all_profiles(conn):
         c.execute(query_get_all_profiles)
 
         rows = c.fetchall()
-        print([row for row in rows])
     except Error as e:
         print(e)
     return rows
