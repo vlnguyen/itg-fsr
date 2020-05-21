@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import padImage from "./img/dance.png";
 import './App.css';
-import { SERVER_URL, SERVER_PORT } from './App.constants';
+import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_ID } from './App.constants';
 
 enum Arrows {
   NONE = -1,
@@ -11,7 +11,9 @@ enum Arrows {
   RIGHT = 3
 }
 
-const ProfileControls = () => {
+const ProfileControls = (selectedProfileId: number) => {
+  // TODO: Add list of profiles to API and create a dropdown
+  console.log(selectedProfileId);
   return (
     <div className="grid__item">
       <img src={padImage} className="App-image" alt="pad"/>
@@ -155,16 +157,19 @@ const addMessageToLog = (
 function App() {
   const [thresholds, setThresholds] = useState<number[]>([]);
   const [messages, setMessages] = useState<string[]>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState<number>(0);
  
   useEffect(() => {
-    fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds`)
+    // TODO: Move fetch to a utility class, create response class.
+    fetch(`http://${SERVER_URL}:${SERVER_PORT}/?padId=${DEFAULT_PAD_ID}`)
       .then(resp => resp.json())
       .then(data => {
-        setThresholds(data.values)
-        addMessageToLog(data.message, messages, setMessages)
+        setSelectedProfileId(data.pad.profileId);
+        setThresholds(data.pad.thresholds);
+        addMessageToLog(data.message, messages, setMessages);
       })
   // equivalent to componentDidMount
-  // eslint-disable-next-line   
+  // eslint-disable-next-line
   }, []);
 
   if (thresholds.length === 0) {
@@ -182,7 +187,7 @@ function App() {
         {PerArrowSensitivityInput(Arrows.UP, thresholds, setThresholds)}
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.LEFT, thresholds, setThresholds)}
-        {ProfileControls()}
+        {ProfileControls(selectedProfileId)}
         {PerArrowSensitivityInput(Arrows.RIGHT, thresholds, setThresholds)}
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.DOWN, thresholds, setThresholds)}
