@@ -21,11 +21,44 @@ s.open()
 
 
 # Routes
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index():
-    return { 
-        'message': "Vincent's FSR sensitivity tools",
-        'success': True
+    conn = db_create_connection()
+    
+    pad_id = request.args.get('padId')
+    invalid_pad = {
+        'padId': 0,
+        'padName': '',
+        'profileId': 0,
+        'profileName': '',
+        'thresholds': []
+    }
+
+    if pad_id:
+        pads = db_select_pad_by_id(conn, pad_id)
+        conn.close()
+        if pads == []:
+            return {
+                'message': f'No pad found with id = {pad_id}.',
+                'success': False,
+                'pad': invalidPad
+            }
+        else:
+            return {
+                'message': 'Loaded current pad and profile.',
+                'success': True,
+                'pad': {
+                    'padId': pads[0][0],
+                    'padName': pads[0][1],
+                    'profileId': pads[0][2],
+                    'profileName': pads[0][3],
+                    'thresholds': pads[0][5:]
+                }
+            } 
+    return {
+        'message': "Must supply a padId",
+        'success': False,
+        'pad': invalid_pad
     }
 
 @app.route('/thresholds', methods=['POST'])
@@ -121,12 +154,14 @@ def get_all_pads():
     conn = db_create_connection()
     
     message = ''
+    success = True
 
     pad_id = request.args.get('id')
     if pad_id:
         pads = db_select_pad_by_id(conn, pad_id)
         if pads == []:
             message = f'No pad found with id = {pad_id}.'
+            success = False
         else:
             message = f'Retrieved pad: {pads[0][1]}.'
     else:
@@ -136,12 +171,13 @@ def get_all_pads():
 
     return {
         'message': message,
-        'success': True,
+        'success': success,
         'pads': [
             {
                 'id': pad[0],
                 'name': pad[1],
-                'profileId': pad[2]
+                'profileId': pad[2],
+                'thresholds': pad[5:]
             } 
             for pad in pads
         ]
@@ -289,7 +325,10 @@ def db_delete_profile(conn, profile_id):
         return False
 
 def db_select_all_pads(conn):
-    query_select_all_pads = '''SELECT * FROM pads'''
+    query_select_all_pads = '''
+        SELECT * FROM pads PA
+            JOIN profiles PR ON PR.id = PA.profileId;
+    '''
     rows = []
     try:
         c = conn.cursor()
@@ -302,7 +341,11 @@ def db_select_all_pads(conn):
     return rows
 
 def db_select_pad_by_id(conn, pad_id):
-    query_select_pad_by_id = '''SELECT id, name, profileId FROM pads WHERE id = ?'''
+    query_select_pad_by_id = '''
+        SELECT * FROM pads PA
+            JOIN profiles PR ON PR.id = PA.profileId
+        WHERE PA.id = ?;
+    '''
     rows = []
     try:
         c = conn.cursor()
