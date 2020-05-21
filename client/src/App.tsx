@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import padImage from "./img/dance.png";
 import './App.css';
+import { SERVER_URL, SERVER_PORT } from './App.constants';
 
 enum Arrows {
   NONE = -1,
@@ -108,7 +109,7 @@ const getPerArrowProperties = (arrow: Arrows) => {
 const handleGetPressures = async (
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    fetch("http://192.168.1.128:5555/pressures")
+    fetch(`http://${SERVER_URL}:${SERVER_PORT}/pressures`)
       .then(resp => resp.json())
       .then(data => {
         addMessageToLog(data.message, messages, setMessages);
@@ -118,7 +119,7 @@ const handleGetPressures = async (
 const handleGetThresholds = async (
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    fetch("http://192.168.1.128:5555/thresholds")
+    fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds`)
       .then(resp => resp.json())
       .then(data => {
         addMessageToLog(data.message, messages, setMessages);
@@ -129,7 +130,7 @@ const handleSetThresholds = async (
   thresholds:number[], 
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    await fetch('http://192.168.1.128:5555/thresholds', {
+    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -149,7 +150,6 @@ const addMessageToLog = (
     const newMessages = [...messages];
     newMessages.unshift(`[${new Date().toLocaleTimeString()}] ${message}`);
     setMessages(newMessages);
-    console.log(newMessages);
 }
 
 function App() {
@@ -157,7 +157,7 @@ function App() {
   const [messages, setMessages] = useState<string[]>([]);
  
   useEffect(() => {
-    fetch("http://192.168.1.128:5555/thresholds")
+    fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds`)
       .then(resp => resp.json())
       .then(data => {
         setThresholds(data.values)
