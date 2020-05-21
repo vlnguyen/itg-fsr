@@ -116,6 +116,37 @@ def get_all_profiles():
         ]
     }
 
+@app.route('/pads', methods=['GET'])
+def get_all_pads():
+    conn = db_create_connection()
+    
+    message = ''
+
+    pad_id = request.args.get('id')
+    if pad_id:
+        pads = db_select_pad_by_id(conn, pad_id)
+        if pads == []:
+            message = f'No pad found with id = {pad_id}.'
+        else:
+            message = f'Retrieved pad: {pads[0][1]}.'
+    else:
+        pads = db_select_all_pads(conn)
+        message = "Retrieved all pads."
+    conn.close()
+
+    return {
+        'message': message,
+        'success': True,
+        'pads': [
+            {
+                'id': pad[0],
+                'name': pad[1],
+                'profileId': pad[2]
+            } 
+            for pad in pads
+        ]
+    } 
+
 # Database functions
 def db_create_connection():
     """ create a database connection to a SQLite database """
@@ -126,7 +157,7 @@ def db_create_connection():
         print(e)
     return conn      
 
-def initialize_database_schema_if_empty(conn):
+def db_initialize_profiles_table_if_empty(conn):
     query_create_profiles_table = """
         CREATE TABLE IF NOT EXISTS profiles (
             id integer PRIMARY KEY AUTOINCREMENT,
@@ -146,6 +177,48 @@ def initialize_database_schema_if_empty(conn):
     except Error as e:
         print(e)
         return False
+
+def db_create_default_profile_if_empty(conn):
+    profiles = db_select_all_profiles(conn)
+    if profiles == []:
+        thresholds_response = get_thresholds() 
+        try:
+            db_insert_new_profile(conn, 'Default', thresholds_response['values'])
+            print(f"Created default profile: Default {thresholds_response['values']}")
+            return True
+        except Error as e:
+            print(e)
+            return False
+
+def db_initialize_pads_table_if_empty(conn):
+    query_create_pads_table = """
+        CREATE TABLE IF NOT EXISTS pads (
+            id integer PRIMARY KEY AUTOINCREMENT,
+            name text NOT NULL,
+            profileId integer NOT NULL,
+            FOREIGN KEY(profileId) REFERENCES profiles(id)
+        ); 
+    """
+    # create pads table
+    try:
+        c = conn.cursor()
+        c.execute(query_create_pads_table)
+        conn.commit()
+        return True
+    except Error as e:
+        print(e)
+        return False
+
+def db_create_default_pad_if_empty(conn):
+    pads = db_select_all_pads(conn)
+    if pads == []:
+        try:
+            db_insert_new_pad(conn, 'Default Pad', 1)
+            print(f"Created default pad: Default Pad (Profile ID: 1)")
+            return True
+        except Error as e:
+            print(e)
+            return False        
 
 def db_insert_new_profile(conn, name, values):
     query_insert_new_profile = """
@@ -214,7 +287,42 @@ def db_delete_profile(conn, profile_id):
     except Error as e:
         print(e)
         return False
-    
+
+def db_select_all_pads(conn):
+    query_select_all_pads = '''SELECT * FROM pads'''
+    rows = []
+    try:
+        c = conn.cursor()
+        c.execute(query_select_all_pads)
+        
+        rows = c.fetchall()
+        return rows
+    except Error as e:
+        print(e)
+    return rows
+
+def db_select_pad_by_id(conn, pad_id):
+    query_select_pad_by_id = '''SELECT id, name, profileId FROM pads WHERE id = ?'''
+    rows = []
+    try:
+        c = conn.cursor()
+        c.execute(query_select_pad_by_id, (pad_id))
+
+        rows = c.fetchall()
+    except Error as e:
+        print(e)
+    return rows
+
+def db_insert_new_pad(conn, name, profile_id):
+    query_insert_new_pad = """INSERT INTO pads (name, profileId) VALUES (?,?);"""
+    try:
+        c = conn.cursor()
+        c.execute(query_insert_new_pad, (name, profile_id,))
+        conn.commit()
+        return True
+    except Error as e:
+        print(e)
+        return False
 
 # Main function
 if __name__ == '__main__':
@@ -223,8 +331,10 @@ if __name__ == '__main__':
     if conn == None:
         print("Error establishing connection to profiles database.")
         exit()
-    initialize_database_schema_if_empty(conn)
-
+    db_initialize_profiles_table_if_empty(conn)
+    db_create_default_profile_if_empty(conn)
+    db_initialize_pads_table_if_empty(conn)
+    db_create_default_pad_if_empty(conn)
     # Close the connection, open as needed
     conn.close()
 
