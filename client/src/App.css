@@ -56,15 +56,11 @@ body {
   padding-bottom: 20px;
 }
 
-.grid button {
-  width: 40px;
-  font-weight: bold;
-}
-
 .grid>* {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  text-align: center;
 
   padding: 8px;
   color: white;
@@ -72,32 +68,14 @@ body {
 }
 
 .grid input {
+  align-self: center;
   font-size: calc(10px + 2vmin);
   text-align: center;
 }
 
-.grid__leftArrow input {
-  align-self: flex-end;
-}
-
-.grid__leftArrow span {
-  align-self: flex-end;
-}
-
-.grid__rightArrow input {
-  align-self: flex-start;
-}
-
-.grid__rightArrow span {
-  align-self: flex-start;
-}
-
-.grid__verticalArrow input {
-  align-self: center;
-}
-
-.grid__verticalArrow span {
-  align-self: center;
+.grid button {
+  width: 40px;
+  font-weight: bold;
 }
 
 .grid__center button {

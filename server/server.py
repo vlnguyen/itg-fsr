@@ -27,11 +27,13 @@ def index():
     
     pad_id = request.args.get('padId')
     invalid_pad = {
-        'padId': 0,
-        'padName': '',
-        'profileId': 0,
-        'profileName': '',
-        'thresholds': []
+        'id': 0,
+        'name': '',
+        'profile': {
+            'id': 0,
+            'name': '',
+            'values': []
+        }
     }
 
     if pad_id:
@@ -50,13 +52,8 @@ def index():
                 'success': False,
                 'pad': invalid_pad,
                 'profiles': [],
-                'thresholds': []
             }
         else:
-            thresholds = []
-            thresholds_response = get_thresholds()
-            if thresholds_response['success']:
-                thresholds = thresholds_response['values']
             return {
                 'message': 'Loaded current pad and profile.',
                 'success': True,
@@ -77,14 +74,12 @@ def index():
                     } 
                     for profile in profiles
                 ],
-                'thresholds': thresholds
             } 
     return {
         'message': "Must supply a padId",
         'success': False,
         'pad': invalid_pad,
         'profiles': [],
-        'thresholds': [],
     }
 
 @app.route('/thresholds', methods=['POST'])

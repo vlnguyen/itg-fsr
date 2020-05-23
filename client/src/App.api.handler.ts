@@ -34,7 +34,6 @@ export async function updateProfile(updatedProfile: Profile):Promise<IApiRespons
             }
         });
     if (saveProfileResponse) {
-        debugger;
         return saveProfileResponse;
     }
     throw Error("Could not update profile.");

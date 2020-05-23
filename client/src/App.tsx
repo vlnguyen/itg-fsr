@@ -34,7 +34,7 @@ const ProfileControls = (
         <button onClick={_e =>
           handleProfileSave(
             profiles, setProfiles,
-            selectedProfile, thresholds, 
+            selectedProfile, setSelectedProfile, thresholds, 
             messages, setMessages
           )}
         >
@@ -58,7 +58,8 @@ const handleProfileSelect = (
 const handleProfileSave = (
   profiles: Profile[],
   setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
-  selectedProfile: Profile, 
+  selectedProfile: Profile,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
   thresholds: number[], 
   messages: string[], 
   setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
@@ -70,28 +71,34 @@ const handleProfileSave = (
       const profileIndex = profiles.findIndex(profile => profile.id === updatedProfile.id)!;
       updatedProfileList.splice(profileIndex, 1, updatedProfile);
 
+      setSelectedProfile(updatedProfile);
       setProfiles(updatedProfileList);
       addMessageToLog(resp.message, messages, setMessages);
     });
 }
 
-const PerArrowSensitivityInput = (arrow: Arrows, thresholds: number[], setThresholds: React.Dispatch<React.SetStateAction<number[]>>) => {
-  const { inputName, divClassName } = getPerArrowProperties(arrow);
-  return (
-    <div className={divClassName}>
-      <input 
-        type="number"
-        name={inputName}
-        value={thresholds[arrow]}
-        onChange={e => {
-          const newThresholds = [...thresholds];
-          newThresholds[arrow] = parseInt(e.target.value);
-          setThresholds(newThresholds);
-        }}
-      />
-      {PlusMinusButtons(arrow, thresholds, setThresholds)}
-    </div>
-  );
+const PerArrowSensitivityInput = (
+  arrow: Arrows, 
+  selectedProfile: Profile, 
+  thresholds: number[], 
+  setThresholds: React.Dispatch<React.SetStateAction<number[]>>
+  ) => {
+    return (
+      <div className='grid__item'>
+        <input
+          type="number"
+          name={getPerArrowInputName(arrow)}
+          value={thresholds[arrow]}
+          onChange={e => {
+            const newThresholds = [...thresholds];
+            newThresholds[arrow] = parseInt(e.target.value);
+            setThresholds(newThresholds);
+          }}
+        />
+        {PlusMinusButtons(arrow, thresholds, setThresholds)}
+        Current: {selectedProfile.values[arrow]}
+      </div>
+    );
 }
 
 const PlusMinusButtons = (
@@ -134,32 +141,19 @@ const handleChangeThreshold = (
     setThresholds(newThresholds);
 }
 
-const getPerArrowProperties = (arrow: Arrows) => {
-  let inputName:string, divClassName: string;
+const getPerArrowInputName = (arrow: Arrows):string => {
   switch(arrow) {
     case Arrows.LEFT:
-      inputName = "thresholdLeft";
-      divClassName = "grid__leftArrow";  
-      break;
+      return "thresholdLeft";
     case Arrows.DOWN:
-      inputName = "thresholdDown";
-      divClassName = "grid__verticalArrow";  
-      break;
+      return "thresholdDown";
     case Arrows.UP:
-      inputName = "thresholdUp";
-      divClassName = "grid__verticalArrow";  
-      break;
+      return "thresholdUp";
     case Arrows.RIGHT:
-      inputName = "thresholdRight";
-      divClassName = "grid__Arrow";  
-      break;
+      return "thresholdRight";
     case Arrows.NONE:
-      inputName = "";
-      divClassName = "";  
-      break;
+      return "";
   }
-
-  return { inputName: inputName, divClassName: divClassName };
 };
 
 const handleGetPressures = async (
@@ -217,7 +211,7 @@ function App() {
   useEffect(() => {
     getInitialLoad().then(resp => {
       setSelectedProfile(resp.pad.profile);
-      setThresholds(resp.thresholds);
+      setThresholds(resp.pad.profile.values);
       setProfiles(resp.profiles);
     });
   }, []);
@@ -234,22 +228,22 @@ function App() {
     <div className="App">
       <div className="grid">
         <div className="grid__item" />
-        {PerArrowSensitivityInput(Arrows.UP, thresholds, setThresholds)}
+        {PerArrowSensitivityInput(Arrows.UP, selectedProfile, thresholds, setThresholds)}
         <div className="grid__item" />
-        {PerArrowSensitivityInput(Arrows.LEFT, thresholds, setThresholds)}
+        {PerArrowSensitivityInput(Arrows.LEFT, selectedProfile, thresholds, setThresholds)}
         {ProfileControls(
           profiles, setProfiles,
           thresholds, setThresholds,
           selectedProfile, setSelectedProfile,
           messages, setMessages
         )}
-        {PerArrowSensitivityInput(Arrows.RIGHT, thresholds, setThresholds)}
+        {PerArrowSensitivityInput(Arrows.RIGHT, selectedProfile, thresholds, setThresholds)}
         <div className="grid__item" />
-        {PerArrowSensitivityInput(Arrows.DOWN, thresholds, setThresholds)}
+        {PerArrowSensitivityInput(Arrows.DOWN, selectedProfile, thresholds, setThresholds)}
         <div className="grid__item" />
       </div>
       <button className="apiButton" onClick={() => handleSetThresholds(thresholds, messages, setMessages)}>
-        Set Thresholds
+         Apply Profile to Pad
       </button>
       <textarea value={messages.join('\n')} readOnly />
       <button className="apiButton" onClick={() => handleGetPressures(messages, setMessages)}>
