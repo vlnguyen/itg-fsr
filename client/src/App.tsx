@@ -15,12 +15,29 @@ enum Arrows {
 const ProfileControls = (
   profiles: Profile[],
   selectedProfile: Profile,
-  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>) => {
+  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  setThresholds: React.Dispatch<React.SetStateAction<number[]>>) => {
     return (
       <div className="grid__item">
-        {selectedProfile.name}
+        <select onChange={e => handleProfileSelect(e, profiles, setSelectedProfile, setThresholds)}>
+          {profiles.map(profile => 
+            <option value={profile.id} selected={profile.id === selectedProfile.id}>
+              {profile.name}
+            </option>  
+          )}
+        </select>
       </div>
     );
+}
+
+const handleProfileSelect = (
+  e: React.ChangeEvent<HTMLSelectElement>,
+  profiles: Profile[],
+  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  setThresholds: React.Dispatch<React.SetStateAction<number[]>>) => {
+    const profile = profiles.find(profile => profile.id === parseInt(e.target.value))!;
+    setSelectedProfile(profile);
+    setThresholds(profile.values);
 }
 
 const PerArrowSensitivityInput = (arrow: Arrows, thresholds: number[], setThresholds: React.Dispatch<React.SetStateAction<number[]>>) => {
@@ -163,7 +180,6 @@ function App() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
  
   useEffect(() => {
-    // TODO: Move fetch to a utility class, create response class.
     getInitialLoad().then(resp => {
       setSelectedProfile(resp.pad.profile);
       setThresholds(resp.thresholds);
@@ -186,7 +202,7 @@ function App() {
         {PerArrowSensitivityInput(Arrows.UP, thresholds, setThresholds)}
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.LEFT, thresholds, setThresholds)}
-        {ProfileControls(profiles, selectedProfile, setSelectedProfile)}
+        {ProfileControls(profiles, selectedProfile, setSelectedProfile, setThresholds)}
         {PerArrowSensitivityInput(Arrows.RIGHT, thresholds, setThresholds)}
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.DOWN, thresholds, setThresholds)}
