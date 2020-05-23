@@ -332,7 +332,7 @@ def db_select_profile_by_id(conn, profile_id):
     return rows
 
 def db_select_all_profiles(conn):
-    query_get_all_profiles = '''SELECT * FROM profiles'''
+    query_get_all_profiles = '''SELECT * FROM profiles ORDER BY name'''
     rows = []
     try:
         c = conn.cursor()
