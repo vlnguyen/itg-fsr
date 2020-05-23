@@ -1,4 +1,4 @@
-import { InitialLoadResponse } from "./App.types";
+import { InitialLoadResponse, Profile, IApiResponse } from "./App.types";
 import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_ID } from "./App.constants";
 
 export async function getInitialLoad():Promise<InitialLoadResponse> {
@@ -12,4 +12,30 @@ export async function getInitialLoad():Promise<InitialLoadResponse> {
         return initialLoadResponse;
     }
     throw Error("Could not fetch initial load.");
+}
+
+export async function updateProfile(updatedProfile: Profile):Promise<IApiResponse> {
+    let saveProfileResponse: IApiResponse | null = null;
+    const postBody = {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedProfile)
+    };
+
+    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/profiles`, postBody)
+        .then(resp => resp.json())
+        .then(data => {
+            saveProfileResponse = {
+                message: data.message,
+                success: data.success
+            }
+        });
+    if (saveProfileResponse) {
+        debugger;
+        return saveProfileResponse;
+    }
+    throw Error("Could not update profile.");
 }

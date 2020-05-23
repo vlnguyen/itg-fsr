@@ -99,3 +99,7 @@ body {
 .grid__verticalArrow span {
   align-self: center;
 }
+
+.grid__center button {
+  width: 100%;
+}

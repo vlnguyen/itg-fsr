@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { SERVER_URL, SERVER_PORT } from './App.constants';
-import { getInitialLoad } from './App.api.handler';
+import { getInitialLoad, updateProfile } from './App.api.handler';
 import { Profile } from './App.types';
 
 enum Arrows {
@@ -14,18 +14,33 @@ enum Arrows {
 
 const ProfileControls = (
   profiles: Profile[],
+  setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
+  thresholds: number[],
+  setThresholds: React.Dispatch<React.SetStateAction<number[]>>,
   selectedProfile: Profile,
   setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
-  setThresholds: React.Dispatch<React.SetStateAction<number[]>>) => {
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>
+  ) => {
     return (
-      <div className="grid__item">
+      <div className="grid__center">
         <select onChange={e => handleProfileSelect(e, profiles, setSelectedProfile, setThresholds)}>
           {profiles.map(profile => 
             <option value={profile.id} selected={profile.id === selectedProfile.id}>
               {profile.name}
-            </option>  
+            </option>
           )}
         </select>
+        <button onClick={_e =>
+          handleProfileSave(
+            profiles, setProfiles,
+            selectedProfile, thresholds, 
+            messages, setMessages
+          )}
+        >
+          Save Profile
+        </button>
+        {/* TODO: Profile rename, new profile. */}
       </div>
     );
 }
@@ -38,6 +53,26 @@ const handleProfileSelect = (
     const profile = profiles.find(profile => profile.id === parseInt(e.target.value))!;
     setSelectedProfile(profile);
     setThresholds(profile.values);
+}
+
+const handleProfileSave = (
+  profiles: Profile[],
+  setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
+  selectedProfile: Profile, 
+  thresholds: number[], 
+  messages: string[], 
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
+    const updatedProfile = {...selectedProfile};
+    updatedProfile.values = thresholds;
+
+    updateProfile(updatedProfile).then(resp => {
+      const updatedProfileList = [...profiles];
+      const profileIndex = profiles.findIndex(profile => profile.id === updatedProfile.id)!;
+      updatedProfileList.splice(profileIndex, 1, updatedProfile);
+
+      setProfiles(updatedProfileList);
+      addMessageToLog(resp.message, messages, setMessages);
+    });
 }
 
 const PerArrowSensitivityInput = (arrow: Arrows, thresholds: number[], setThresholds: React.Dispatch<React.SetStateAction<number[]>>) => {
@@ -202,7 +237,12 @@ function App() {
         {PerArrowSensitivityInput(Arrows.UP, thresholds, setThresholds)}
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.LEFT, thresholds, setThresholds)}
-        {ProfileControls(profiles, selectedProfile, setSelectedProfile, setThresholds)}
+        {ProfileControls(
+          profiles, setProfiles,
+          thresholds, setThresholds,
+          selectedProfile, setSelectedProfile,
+          messages, setMessages
+        )}
         {PerArrowSensitivityInput(Arrows.RIGHT, thresholds, setThresholds)}
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.DOWN, thresholds, setThresholds)}

@@ -175,6 +175,23 @@ def get_all_profiles():
         ]
     }
 
+@app.route('/profiles', methods=['POST'])
+def update_profile():
+    req_data = request.get_json()
+    if not req_data:
+        return {
+            'message': 'Profile request body required.',
+            'success': False
+        }
+    conn = db_create_connection()
+    profile_name = req_data['name']
+    db_update_existing_profile(conn, req_data['id'], profile_name, req_data['values'])
+    conn.close()
+    return { 
+        'message': f'Saved profile: {profile_name}',
+        'success': True,
+    }
+
 @app.route('/pads', methods=['GET'])
 def get_all_pads():
     conn = db_create_connection()
@@ -325,14 +342,14 @@ def db_update_existing_profile(conn, profile_id, name, values):
         c = conn.cursor()
         if values == []:
             query_update_existing_profile_name = '''UPDATE profiles SET name = ?, WHERE id = ?;'''
-            c.execute(query_update_existing_profile_name (str(name), profile_id,))
+            c.execute(query_update_existing_profile_name (name, profile_id,))
         else:
             query_update_existing_profiles = ''' 
             UPDATE profiles
                 SET name = ?, pin0 = ?, pin1 = ?, pin2 = ?, pin3 = ?
                 WHERE id = ?;
             '''
-            c.execute(query_update_existing_profiles (str(name), values[0], values[1], values[2], values[3], profile_id,))
+            c.execute(query_update_existing_profiles, (name, values[0], values[1], values[2], values[3], profile_id,))
         conn.commit()
         return True
     except Error as e:
