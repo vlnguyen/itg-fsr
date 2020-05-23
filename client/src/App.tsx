@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import padImage from "./img/dance.png";
 import './App.css';
-import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_ID } from './App.constants';
+import { SERVER_URL, SERVER_PORT } from './App.constants';
 import { getInitialLoad } from './App.api.handler';
+import { Profile } from './App.types';
 
 enum Arrows {
   NONE = -1,
@@ -12,14 +12,15 @@ enum Arrows {
   RIGHT = 3
 }
 
-const ProfileControls = (selectedProfileId: number) => {
-  // TODO: Add list of profiles to API and create a dropdown
-  console.log(selectedProfileId);
-  return (
-    <div className="grid__item">
-      <img src={padImage} className="App-image" alt="pad"/>
-    </div>
-  );
+const ProfileControls = (
+  profiles: Profile[],
+  selectedProfile: Profile,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>) => {
+    return (
+      <div className="grid__item">
+        {selectedProfile.name}
+      </div>
+    );
 }
 
 const PerArrowSensitivityInput = (arrow: Arrows, thresholds: number[], setThresholds: React.Dispatch<React.SetStateAction<number[]>>) => {
@@ -158,23 +159,22 @@ const addMessageToLog = (
 function App() {
   const [thresholds, setThresholds] = useState<number[]>([]);
   const [messages, setMessages] = useState<string[]>([]);
-  const [selectedProfileId, setSelectedProfileId] = useState<number>(0);
+  const [selectedProfile, setSelectedProfile] = useState<Profile>(new Profile(0, 'Invalid Profile', []));
+  const [profiles, setProfiles] = useState<Profile[]>([]);
  
   useEffect(() => {
     // TODO: Move fetch to a utility class, create response class.
     getInitialLoad().then(resp => {
-      setSelectedProfileId(resp.pad.profile.id);
+      setSelectedProfile(resp.pad.profile);
       setThresholds(resp.thresholds);
-      addMessageToLog(resp.message, messages, setMessages);
-    })
-  // equivalent to componentDidMount
-  // eslint-disable-next-line
+      setProfiles(resp.profiles);
+    });
   }, []);
 
-  if (thresholds.length === 0) {
+  if (thresholds.length === 0 || profiles.length === 0) {
     return (
       <div className="App">
-        <p>Loading thresholds...</p>
+        <p>Loading...</p>
       </div>
     );
   }
@@ -186,7 +186,7 @@ function App() {
         {PerArrowSensitivityInput(Arrows.UP, thresholds, setThresholds)}
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.LEFT, thresholds, setThresholds)}
-        {ProfileControls(selectedProfileId)}
+        {ProfileControls(profiles, selectedProfile, setSelectedProfile)}
         {PerArrowSensitivityInput(Arrows.RIGHT, thresholds, setThresholds)}
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.DOWN, thresholds, setThresholds)}
