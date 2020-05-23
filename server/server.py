@@ -86,17 +86,28 @@ def index():
 def set_thresholds():
     message = ''
     success = False
+    
+    req_data = request.get_json()
     try:
+        ## Serial input to the controller to apply new thresholds
         values = ','.join(str(x) for x in request.get_json()['values']) + '\n'
         s.write(values.encode())
-        
+        ## Serial call to get the current thresholds back
         s.write("thresholds".encode())
-        serial_response = s.readline()
+        serial_response = f'New Thresholds: {s.readline().decode().strip()}'
+
+        ## Update the pad to associate with given profile
+        conn = db_create_connection()
+        success = db_update_pad_by_id(conn, req_data['padId'], req_data['profile']['id'])
+        conn.close()
         
-        message = "New Thresholds: " + serial_response.decode().strip(),
-        success = True
+        if success:
+            message = f"Applied profile: {req_data['profile']['name']} ({serial_response})"
+        else:
+            message = f'Could not apply profile to pad. Check current thresholds.'
     except Exception as e:
-       message = str(e)
+        message = str(e),
+        success = False
     
     return {
         'message': message,
@@ -405,6 +416,21 @@ def db_insert_new_pad(conn, name, profile_id):
         print(e)
         return False
 
+def db_update_pad_by_id(conn, pad_id, profile_id):
+    try:
+        query_update_pad = '''
+            UPDATE pads
+                SET profileId = ?
+                WHERE id = ?
+        '''
+        c = conn.cursor()
+        c.execute(query_update_pad, (profile_id, pad_id,))
+        conn.commit()
+        return True
+    except Error as e:
+        print(str(e))
+        return False
+    
 # Main function
 if __name__ == '__main__':
     # Create connection to database

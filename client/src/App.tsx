@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { SERVER_URL, SERVER_PORT } from './App.constants';
+import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_ID } from './App.constants';
 import { getInitialLoad, updateProfile } from './App.api.handler';
 import { Profile } from './App.types';
 
@@ -31,14 +31,14 @@ const ProfileControls = (
             </option>
           )}
         </select>
-        <button onClick={_e =>
+        <button onClick={() =>
           handleProfileSave(
             profiles, setProfiles,
             selectedProfile, setSelectedProfile, thresholds, 
             messages, setMessages
           )}
         >
-          Save Profile
+          Save to Profile
         </button>
         {/* TODO: Profile rename, new profile. */}
       </div>
@@ -78,8 +78,7 @@ const handleProfileSave = (
 }
 
 const PerArrowSensitivityInput = (
-  arrow: Arrows, 
-  selectedProfile: Profile, 
+  arrow: Arrows,
   thresholds: number[], 
   setThresholds: React.Dispatch<React.SetStateAction<number[]>>
   ) => {
@@ -96,10 +95,9 @@ const PerArrowSensitivityInput = (
           }}
         />
         {PlusMinusButtons(arrow, thresholds, setThresholds)}
-        Current: {selectedProfile.values[arrow]}
       </div>
     );
-}
+};
 
 const PlusMinusButtons = (
   arrow: Arrows, 
@@ -177,7 +175,8 @@ const handleGetThresholds = async (
 }
 
 const handleSetThresholds = async (
-  thresholds:number[], 
+  selectedProfile: Profile,
+  thresholds: number[],
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
     await fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds`, {
@@ -185,7 +184,11 @@ const handleSetThresholds = async (
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ values: thresholds })
+      body: JSON.stringify({
+        padId: DEFAULT_PAD_ID,
+        profile: selectedProfile,
+        values: thresholds
+      })
     })
     .then(resp => resp.json())
     .then(data => {
@@ -228,21 +231,21 @@ function App() {
     <div className="App">
       <div className="grid">
         <div className="grid__item" />
-        {PerArrowSensitivityInput(Arrows.UP, selectedProfile, thresholds, setThresholds)}
+        {PerArrowSensitivityInput(Arrows.UP, thresholds, setThresholds)}
         <div className="grid__item" />
-        {PerArrowSensitivityInput(Arrows.LEFT, selectedProfile, thresholds, setThresholds)}
+        {PerArrowSensitivityInput(Arrows.LEFT, thresholds, setThresholds)}
         {ProfileControls(
           profiles, setProfiles,
           thresholds, setThresholds,
           selectedProfile, setSelectedProfile,
           messages, setMessages
         )}
-        {PerArrowSensitivityInput(Arrows.RIGHT, selectedProfile, thresholds, setThresholds)}
+        {PerArrowSensitivityInput(Arrows.RIGHT, thresholds, setThresholds)}
         <div className="grid__item" />
-        {PerArrowSensitivityInput(Arrows.DOWN, selectedProfile, thresholds, setThresholds)}
+        {PerArrowSensitivityInput(Arrows.DOWN, thresholds, setThresholds)}
         <div className="grid__item" />
       </div>
-      <button className="apiButton" onClick={() => handleSetThresholds(thresholds, messages, setMessages)}>
+      <button className="apiButton" onClick={() => handleSetThresholds(selectedProfile, thresholds, messages, setMessages)}>
          Apply Profile to Pad
       </button>
       <textarea value={messages.join('\n')} readOnly />
