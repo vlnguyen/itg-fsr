@@ -37,13 +37,18 @@ def index():
     if pad_id:
         pads = db_select_pad_by_id(conn, pad_id)
         conn.close()
+        thresholds = []
         if pads == []:
             return {
                 'message': f'No pad found with id = {pad_id}.',
                 'success': False,
-                'pad': invalidPad
+                'pad': invalidPad,
+                'thresholds': thresholds
             }
         else:
+            thresholds_response = get_thresholds()
+            if thresholds_response['success']:
+                thresholds = thresholds_response['values']
             return {
                 'message': 'Loaded current pad and profile.',
                 'success': True,
@@ -53,7 +58,8 @@ def index():
                     'profileId': pads[0][2],
                     'profileName': pads[0][3],
                     'thresholds': pads[0][5:]
-                }
+                },
+                'thresholds': thresholds
             } 
     return {
         'message': "Must supply a padId",

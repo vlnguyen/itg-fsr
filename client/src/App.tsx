@@ -165,7 +165,7 @@ function App() {
       .then(resp => resp.json())
       .then(data => {
         setSelectedProfileId(data.pad.profileId);
-        setThresholds(data.pad.thresholds);
+        setThresholds(data.thresholds);
         addMessageToLog(data.message, messages, setMessages);
       })
   // equivalent to componentDidMount
