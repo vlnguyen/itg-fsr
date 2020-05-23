@@ -37,15 +37,15 @@ def index():
     if pad_id:
         pads = db_select_pad_by_id(conn, pad_id)
         conn.close()
-        thresholds = []
         if pads == []:
             return {
                 'message': f'No pad found with id = {pad_id}.',
                 'success': False,
-                'pad': invalidPad,
-                'thresholds': thresholds
+                'pad': invalid_pad,
+                'thresholds': []
             }
         else:
+            thresholds = []
             thresholds_response = get_thresholds()
             if thresholds_response['success']:
                 thresholds = thresholds_response['values']
@@ -64,7 +64,8 @@ def index():
     return {
         'message': "Must supply a padId",
         'success': False,
-        'pad': invalid_pad
+        'pad': invalid_pad,
+        'thresholds': []
     }
 
 @app.route('/thresholds', methods=['POST'])
