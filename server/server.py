@@ -53,11 +53,13 @@ def index():
                 'message': 'Loaded current pad and profile.',
                 'success': True,
                 'pad': {
-                    'padId': pads[0][0],
-                    'padName': pads[0][1],
-                    'profileId': pads[0][2],
-                    'profileName': pads[0][3],
-                    'thresholds': pads[0][5:]
+                    'id': pads[0][0],
+                    'name': pads[0][1],
+                    'profile': {
+                        'id': pads[0][2],
+                        'name': pads[0][3],
+                        'values': pads[0][5:]
+                    },
                 },
                 'thresholds': thresholds
             } 

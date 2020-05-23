@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import padImage from "./img/dance.png";
 import './App.css';
 import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_ID } from './App.constants';
+import { getInitialLoad } from './App.api.handler';
 
 enum Arrows {
   NONE = -1,
@@ -161,13 +162,11 @@ function App() {
  
   useEffect(() => {
     // TODO: Move fetch to a utility class, create response class.
-    fetch(`http://${SERVER_URL}:${SERVER_PORT}/?padId=${DEFAULT_PAD_ID}`)
-      .then(resp => resp.json())
-      .then(data => {
-        setSelectedProfileId(data.pad.profileId);
-        setThresholds(data.thresholds);
-        addMessageToLog(data.message, messages, setMessages);
-      })
+    getInitialLoad().then(resp => {
+      setSelectedProfileId(resp.pad.profile.id);
+      setThresholds(resp.thresholds);
+      addMessageToLog(resp.message, messages, setMessages);
+    })
   // equivalent to componentDidMount
   // eslint-disable-next-line
   }, []);
@@ -196,7 +195,7 @@ function App() {
       <button className="apiButton" onClick={() => handleSetThresholds(thresholds, messages, setMessages)}>
         Set Thresholds
       </button>
-      <textarea value={messages.join('\n')} />
+      <textarea value={messages.join('\n')} readOnly />
       <button className="apiButton" onClick={() => handleGetPressures(messages, setMessages)}>
         Get Pressures
       </button>
