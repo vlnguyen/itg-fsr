@@ -36,12 +36,20 @@ def index():
 
     if pad_id:
         pads = db_select_pad_by_id(conn, pad_id)
+        profiles = db_select_all_profiles(conn)
         conn.close()
-        if pads == []:
+
+        if pads == [] or profiles == []:
+            message = ''
+            if pads == []:
+                message = f"{message} No pad found with id = {pad_id}."
+            if profiles == []:
+                message = f"{message} No profiles found on the database."
             return {
-                'message': f'No pad found with id = {pad_id}.',
+                'message': message,
                 'success': False,
                 'pad': invalid_pad,
+                'profiles': [],
                 'thresholds': []
             }
         else:
@@ -56,18 +64,27 @@ def index():
                     'id': pads[0][0],
                     'name': pads[0][1],
                     'profile': {
-                        'id': pads[0][2],
-                        'name': pads[0][3],
+                        'id': pads[0][3],
+                        'name': pads[0][4],
                         'values': pads[0][5:]
                     },
                 },
+                'profiles':[
+                    {
+                        'id': profile[0],
+                        'name': profile[1],
+                        'values': profile[2:]
+                    } 
+                    for profile in profiles
+                ],
                 'thresholds': thresholds
             } 
     return {
         'message': "Must supply a padId",
         'success': False,
         'pad': invalid_pad,
-        'thresholds': []
+        'profiles': [],
+        'thresholds': [],
     }
 
 @app.route('/thresholds', methods=['POST'])

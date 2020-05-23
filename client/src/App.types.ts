@@ -16,11 +16,15 @@ export class InitialLoadResponse implements IApiResponse {
                 data.pad.profile.values
             )
         );
+        this.profiles = data.profiles.map((profile:any) => 
+            new Profile(profile.id, profile.name, profile.values)
+        );
         this.thresholds = data.thresholds;
     }
     message: string;
     success: boolean;
     pad: Pad;
+    profiles: Profile[];
     thresholds: number[];
 }
 
