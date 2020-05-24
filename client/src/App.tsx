@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_ID } from './App.constants';
-import { getInitialLoad, updateProfile, getPressures, getThresholds } from './App.api.handler';
+import { DEFAULT_PAD_ID } from './App.constants';
+import { getInitialLoad, updateProfile, getPressures, getThresholds, setThresholdsOnPad } from './App.api.handler';
 import { Profile } from './App.types';
 
 enum Arrows {
@@ -175,21 +175,9 @@ const handleSetThresholds = async (
   thresholds: number[],
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        padId: DEFAULT_PAD_ID,
-        profile: selectedProfile,
-        values: thresholds
-      })
-    })
-    .then(resp => resp.json())
-    .then(data => {
-      addMessageToLog(data.message, messages, setMessages);
-    })
+    setThresholdsOnPad(DEFAULT_PAD_ID, selectedProfile, thresholds).then(resp =>
+      addMessageToLog(resp.message, messages, setMessages)
+    );
 }
 
 const addMessageToLog = (

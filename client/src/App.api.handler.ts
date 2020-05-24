@@ -1,4 +1,4 @@
-import { InitialLoadResponse, Profile, IApiResponse } from "./App.types";
+import { InitialLoadResponse, Profile, IApiResponse, SetThresholdsOnPadRequest } from "./App.types";
 import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_ID } from "./App.constants";
 
 export async function getInitialLoad():Promise<InitialLoadResponse> {
@@ -46,6 +46,30 @@ export async function getThresholds():Promise<IApiResponse> {
     throw Error("Could not get current thresholds");
 }
 
+export async function setThresholdsOnPad(padId: number, selectedProfile: Profile, thresholds: number[]): Promise<IApiResponse> {
+    let setThresholdsOnPadResponse: IApiResponse | null = null;
+    const postBody = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(
+            new SetThresholdsOnPadRequest(DEFAULT_PAD_ID, selectedProfile, thresholds)
+        )
+    };
+    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds`, postBody)
+        .then(resp => resp.json())
+        .then(data => {
+            setThresholdsOnPadResponse = {
+                message: data.message,
+                success: data.success
+            }
+        })
+    if (setThresholdsOnPadResponse) {
+        return setThresholdsOnPadResponse;
+    }
+    throw Error("Could not apply thresholds to pad.");
+}
 export async function updateProfile(updatedProfile: Profile):Promise<IApiResponse> {
     let saveProfileResponse: IApiResponse | null = null;
     const postBody = {

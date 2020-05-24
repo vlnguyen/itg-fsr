@@ -28,6 +28,16 @@ export class InitialLoadResponse implements IApiResponse {
     thresholds: number[];
 }
 
+export class SetThresholdsOnPadRequest {
+    constructor(padId: number, profile: Profile, values: number[]) {
+        this.padId = padId;
+        this.profile = profile;
+        this.values = values;
+    }
+    padId: number;
+    profile: Profile;
+    values: number[];
+}
 export class Pad {
     constructor(id: number, name: string, profile: Profile) {
         this.id = id;
