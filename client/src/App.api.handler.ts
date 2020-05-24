@@ -30,6 +30,22 @@ export async function getPressures():Promise<IApiResponse> {
     throw Error("Could not get current pressures.");
 }
 
+export async function getThresholds():Promise<IApiResponse> {
+    let getThresholdsResponse: IApiResponse | null = null;
+    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds`)
+        .then(resp => resp.json())
+        .then(data => {
+            getThresholdsResponse = {
+                message: data.message,
+                success: data.success
+            }
+        });
+    if (getThresholdsResponse) {
+        return getThresholdsResponse;
+    }
+    throw Error("Could not get current thresholds");
+}
+
 export async function updateProfile(updatedProfile: Profile):Promise<IApiResponse> {
     let saveProfileResponse: IApiResponse | null = null;
     const postBody = {
