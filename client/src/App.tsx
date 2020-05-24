@@ -21,7 +21,7 @@ const ProfileControls = (
     return (
       <div className="grid__center">
         {profileControlStatus === ProfileControlStatus.NONE && 
-          ProfileControlsNoneState(
+          ProfileControlsDefaultState(
             profiles, setProfiles, 
             thresholds, setThresholds, 
             selectedProfile, setSelectedProfile, 
@@ -31,74 +31,38 @@ const ProfileControls = (
           )
         }
         {profileControlStatus === ProfileControlStatus.RENAME && 
-          <>
-            <input type="text" value={updatedName} onChange={e => setUpdatedName(e.target.value)} />
-            <button onClick={() => {
-              handleProfileRename(
-                selectedProfile, updatedName, setSelectedProfile, 
-                profiles, setProfiles,
-                messages, setMessages
-              );
-              setUpdatedName("");
-              setProfileControlStatus(ProfileControlStatus.NONE);
-            }}>
-              Confirm Rename
-            </button>
-            <button onClick={() => {
-              setUpdatedName("");
-              setProfileControlStatus(ProfileControlStatus.NONE);
-            }}>
-              Cancel
-            </button>
-          </>
+          ProfileControlsRenameState(
+            profiles,setProfiles,
+            selectedProfile, setSelectedProfile,
+            messages,setMessages,
+            setProfileControlStatus,
+            updatedName, setUpdatedName
+          )
         }
         {profileControlStatus === ProfileControlStatus.CREATE && 
-          <>
-            <input type="text" value={updatedName} onChange={e => setUpdatedName(e.target.value)} />
-            <button onClick={() => {
-              handleProfileCreate(
-                updatedName, setSelectedProfile, 
-                profiles, setProfiles,
-                thresholds,
-                messages, setMessages
-              );
-              setUpdatedName("");
-              setProfileControlStatus(ProfileControlStatus.NONE);
-            }}>
-              Confirm Create
-            </button>
-            <button onClick={() => {
-              setUpdatedName("");
-              setProfileControlStatus(ProfileControlStatus.NONE);
-            }}>
-              Cancel
-            </button>
-          </>
+          ProfileControlsCreateState(
+            profiles, setProfiles,
+            thresholds,
+            setSelectedProfile,
+            messages,setMessages,
+            setProfileControlStatus,
+            updatedName, setUpdatedName
+          )
         }
         {profileControlStatus === ProfileControlStatus.DELETE && 
-          <>
-            Are you sure you want to delete profile {selectedProfile.name}?
-            <button onClick={() => {
-              handleProfileDelete(
-                selectedProfile, setSelectedProfile, 
-                profiles, setProfiles,
-                setThresholds,
-                messages, setMessages
-              );
-              setProfileControlStatus(ProfileControlStatus.NONE);
-            }}>
-              CONFIRM DELETE
-            </button>
-            <button onClick={() => setProfileControlStatus(ProfileControlStatus.NONE)}>
-              Cancel
-            </button>
-          </>
+          ProfileControlsDeleteState(
+            profiles, setProfiles,
+            setThresholds,
+            selectedProfile, setSelectedProfile,
+            messages,setMessages,
+            setProfileControlStatus
+          )
         }
       </div>
     );
 }
 
-const ProfileControlsNoneState = (
+const ProfileControlsDefaultState = (
   profiles: Profile[],
   setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
   thresholds: number[],
@@ -148,6 +112,108 @@ const ProfileControlsNoneState = (
     </>
   )
 };
+
+const ProfileControlsRenameState = (
+  profiles: Profile[],
+  setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
+  selectedProfile: Profile,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  setProfileControlStatus: React.Dispatch<React.SetStateAction<ProfileControlStatus>>,
+  updatedName: string,
+  setUpdatedName: React.Dispatch<React.SetStateAction<string>>
+) => {
+  return (
+    <>
+      <input type="text" value={updatedName} onChange={e => setUpdatedName(e.target.value)} />
+      <button onClick={() => {
+        handleProfileRename(
+          selectedProfile, updatedName, setSelectedProfile, 
+          profiles, setProfiles,
+          messages, setMessages
+        );
+        setUpdatedName("");
+        setProfileControlStatus(ProfileControlStatus.NONE);
+      }}>
+        Confirm Rename
+      </button>
+      <button onClick={() => {
+        setUpdatedName("");
+        setProfileControlStatus(ProfileControlStatus.NONE);
+      }}>
+        Cancel
+      </button>
+    </>
+  );
+};
+
+const ProfileControlsCreateState = (
+  profiles: Profile[],
+  setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
+  thresholds: number[],
+  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  setProfileControlStatus: React.Dispatch<React.SetStateAction<ProfileControlStatus>>,
+  updatedName: string,
+  setUpdatedName: React.Dispatch<React.SetStateAction<string>>
+) => {
+  return (
+    <>
+      <input type="text" value={updatedName} onChange={e => setUpdatedName(e.target.value)} />
+      <button onClick={() => {
+        handleProfileCreate(
+          updatedName, setSelectedProfile,
+          profiles, setProfiles,
+          thresholds,
+          messages, setMessages
+        );
+        setUpdatedName("");
+        setProfileControlStatus(ProfileControlStatus.NONE);
+      }}>
+        Confirm Create
+      </button>
+      <button onClick={() => {
+        setUpdatedName("");
+        setProfileControlStatus(ProfileControlStatus.NONE);
+      }}>
+        Cancel
+      </button>
+    </>
+  );
+};
+
+const ProfileControlsDeleteState = (
+  profiles: Profile[],
+  setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
+  setThresholds: React.Dispatch<React.SetStateAction<number[]>>,
+  selectedProfile: Profile,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  setProfileControlStatus: React.Dispatch<React.SetStateAction<ProfileControlStatus>>
+)  => {
+  return (
+    <>
+      Are you sure you want to delete profile {selectedProfile.name}?
+      <button onClick={() => {
+        handleProfileDelete(
+          selectedProfile, setSelectedProfile,
+          profiles, setProfiles,
+          setThresholds,
+          messages, setMessages
+        );
+        setProfileControlStatus(ProfileControlStatus.NONE);
+      }}>
+        CONFIRM DELETE
+      </button>
+      <button onClick={() => setProfileControlStatus(ProfileControlStatus.NONE)}>
+        Cancel
+      </button>
+    </>
+  );
+}
 
 const handleProfileRename = (
   selectedProfile: Profile,
