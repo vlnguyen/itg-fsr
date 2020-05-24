@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { DEFAULT_PAD_ID } from './App.constants';
-import { getInitialLoad, updateProfile, getPressures, getThresholds, setThresholdsOnPad } from './App.api.handler';
+import { getInitialLoad, updateProfile, getPressures, getThresholds, setThresholdsOnPad, createProfile } from './App.api.handler';
 import { Profile, Arrows, ProfileControlStatus } from './App.types';
 
 const ProfileControls = (
@@ -52,6 +52,29 @@ const ProfileControls = (
             </button>
           </>
         }
+        {profileControlStatus === ProfileControlStatus.CREATE && 
+          <>
+            <input type="text" value={updatedName} onChange={e => setUpdatedName(e.target.value)} />
+            <button onClick={() => {
+              handleProfileCreate(
+                updatedName, setSelectedProfile, 
+                profiles, setProfiles,
+                thresholds,
+                messages, setMessages
+              );
+              setUpdatedName("");
+              setProfileControlStatus(ProfileControlStatus.NONE);
+            }}>
+              Confirm Create
+            </button>
+            <button onClick={() => {
+              setUpdatedName("");
+              setProfileControlStatus(ProfileControlStatus.NONE);
+            }}>
+              Cancel
+            </button>
+          </>
+        }
       </div>
     );
 }
@@ -92,6 +115,12 @@ const ProfileControlsNoneState = (
       }}>
         Rename Profile
       </button>
+      <button onClick={() => {
+        setUpdatedName("");
+        setProfileControlStatus(ProfileControlStatus.CREATE);
+      }}>
+        Create Profile
+      </button>
     </>
   )
 };
@@ -117,7 +146,29 @@ const handleProfileRename = (
   setProfiles(updatedProfileList);
 
   setSelectedProfile(updatedProfile);
-}
+};
+
+const handleProfileCreate = (
+  updatedName: string,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  profiles: Profile[],
+  setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
+  thresholds: number[],
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>
+) => {
+  const newProfile = new Profile(0, updatedName, thresholds);
+  createProfile(newProfile).then(resp => {
+    addMessageToLog(resp.message, messages, setMessages);
+    if (resp.success) {
+      newProfile.id = resp.profile.id;
+      const newProfilesList = [...profiles, newProfile];
+      newProfilesList.sort((a,b) => a.name < b.name ? -1 : 1);
+      setProfiles(newProfilesList);
+      setSelectedProfile(newProfile);
+    }
+  })
+};
 
 const handleProfileSelect = (
   e: React.ChangeEvent<HTMLSelectElement>,

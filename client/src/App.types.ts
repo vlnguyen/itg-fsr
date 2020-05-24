@@ -13,7 +13,8 @@ export enum Arrows {
 
 export enum ProfileControlStatus {
     NONE = -1,
-    RENAME
+    RENAME,
+    CREATE
 }
 
 export class InitialLoadResponse implements IApiResponse {
@@ -51,6 +52,18 @@ export class SetThresholdsOnPadRequest {
     profile: Profile;
     values: number[];
 }
+
+export class CreateNewProfileResponse implements IApiResponse {
+    constructor(message: string, success: boolean, profile: Profile) {
+        this.message = message;
+        this.success = success;
+        this.profile = profile;
+    }
+    message: string;
+    success: boolean;
+    profile: Profile;
+}
+
 export class Pad {
     constructor(id: number, name: string, profile: Profile) {
         this.id = id;

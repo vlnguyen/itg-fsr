@@ -198,6 +198,50 @@ def update_profile():
         'success': True,
     }
 
+@app.route('/profiles', methods=['PUT'])
+def add_profile():
+    req_data = request.get_json()
+    print(req_data)
+    profile = {
+        'id': 0,
+        'name': '',
+        'values': []
+    }
+
+    if not req_data:
+        return {
+            'message': 'Profile request body required.',
+            'success': False,
+            'profile': profile
+        }
+
+    profile_name = req_data['name']
+    values = req_data['values']
+    
+    conn = db_create_connection()
+    new_profile_id = db_insert_new_profile(conn, profile_name, values)
+    conn.close()
+
+    message = ''
+    success = False
+
+    if new_profile_id == 0:
+        message = f'Failed to create new profile: {profile_name}'
+    else:
+        message = f'Created new profile: {profile_name}'
+        success = True
+        profile = {
+            'id': new_profile_id,
+            'name': profile_name,
+            'values': req_data['values']
+        }
+
+    return { 
+        'message': message,
+        'success': success,
+        'profile': profile
+    }
+
 @app.route('/pads', methods=['GET'])
 def get_all_pads():
     conn = db_create_connection()
@@ -314,10 +358,10 @@ def db_insert_new_profile(conn, name, values):
         c = conn.cursor()
         c.execute(query_insert_new_profile, (name, values[0], values[1], values[2], values[3],))
         conn.commit()
-        return True
+        return c.lastrowid
     except Error as e:
         print(e)
-        return False
+        return 0
 
 def db_select_profile_by_id(conn, profile_id):
     query_select_profile_by_id = '''SELECT id, name, pin0, pin1, pin2, pin3 FROM profiles WHERE id = ?'''

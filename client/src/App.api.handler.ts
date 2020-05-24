@@ -1,4 +1,4 @@
-import { InitialLoadResponse, Profile, IApiResponse, SetThresholdsOnPadRequest } from "./App.types";
+import { InitialLoadResponse, Profile, IApiResponse, SetThresholdsOnPadRequest, CreateNewProfileResponse as CreateProfileResponse } from "./App.types";
 import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_ID } from "./App.constants";
 
 export async function getInitialLoad():Promise<InitialLoadResponse> {
@@ -70,6 +70,7 @@ export async function setThresholdsOnPad(padId: number, selectedProfile: Profile
     }
     throw Error("Could not apply thresholds to pad.");
 }
+
 export async function updateProfile(updatedProfile: Profile):Promise<IApiResponse> {
     let saveProfileResponse: IApiResponse | null = null;
     const postBody = {
@@ -91,6 +92,32 @@ export async function updateProfile(updatedProfile: Profile):Promise<IApiRespons
         });
     if (saveProfileResponse) {
         return saveProfileResponse;
+    }
+    throw Error("Could not update profile.");
+}
+
+export async function createProfile(newProfile: Profile):Promise<CreateProfileResponse> {
+    let createProfileResponse: CreateProfileResponse | null = null;
+    const postBody = {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newProfile)
+    };
+
+    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/profiles`, postBody)
+        .then(resp => resp.json())
+        .then(data => {
+            createProfileResponse = new CreateProfileResponse(
+                data.message, 
+                data.success, 
+                new Profile(data.profile.id, data.profile.name, data.profile.values)
+            )
+        });
+    if (createProfileResponse) {
+        return createProfileResponse;
     }
     throw Error("Could not update profile.");
 }
