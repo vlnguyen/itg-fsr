@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { DEFAULT_PAD_ID } from './App.constants';
-import { getInitialLoad, updateProfile, getPressures, getThresholds, setThresholdsOnPad, createProfile } from './App.api.handler';
+import { getInitialLoad, updateProfile, getPressures, getThresholds, setThresholdsOnPad, createProfile, deleteProfile } from './App.api.handler';
 import { Profile, Arrows, ProfileControlStatus } from './App.types';
 
 const ProfileControls = (
@@ -75,6 +75,25 @@ const ProfileControls = (
             </button>
           </>
         }
+        {profileControlStatus === ProfileControlStatus.DELETE && 
+          <>
+            Are you sure you want to delete profile {selectedProfile.name}?
+            <button onClick={() => {
+              handleProfileDelete(
+                selectedProfile, setSelectedProfile, 
+                profiles, setProfiles,
+                setThresholds,
+                messages, setMessages
+              );
+              setProfileControlStatus(ProfileControlStatus.NONE);
+            }}>
+              CONFIRM DELETE
+            </button>
+            <button onClick={() => setProfileControlStatus(ProfileControlStatus.NONE)}>
+              Cancel
+            </button>
+          </>
+        }
       </div>
     );
 }
@@ -121,6 +140,11 @@ const ProfileControlsNoneState = (
       }}>
         Create Profile
       </button>
+      {profiles.length > 1 && 
+        <button onClick={() => setProfileControlStatus(ProfileControlStatus.DELETE)}>
+          Delete Profile
+        </button>
+      }
     </>
   )
 };
@@ -167,6 +191,26 @@ const handleProfileCreate = (
       setProfiles(newProfilesList);
       setSelectedProfile(newProfile);
     }
+  })
+};
+
+const handleProfileDelete = (
+  selectedProfile: Profile,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  profiles: Profile[],
+  setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
+  setThresholds: React.Dispatch<React.SetStateAction<number[]>>,
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>
+) => {
+    deleteProfile(selectedProfile).then(resp => {
+      addMessageToLog(resp.message, messages, setMessages);
+      if (resp.success) {
+        const newProfilesList = profiles.filter(profile => profile.id !== selectedProfile.id);
+        setProfiles(newProfilesList);
+        setSelectedProfile(newProfilesList[0]);
+        setThresholds(newProfilesList[0].values);
+      }
   })
 };
 

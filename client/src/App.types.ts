@@ -14,7 +14,8 @@ export enum Arrows {
 export enum ProfileControlStatus {
     NONE = -1,
     RENAME,
-    CREATE
+    CREATE,
+    DELETE
 }
 
 export class InitialLoadResponse implements IApiResponse {

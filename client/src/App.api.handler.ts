@@ -96,6 +96,22 @@ export async function updateProfile(updatedProfile: Profile):Promise<IApiRespons
     throw Error("Could not update profile.");
 }
 
+export async function deleteProfile(profile: Profile):Promise<IApiResponse> {
+    let deleteResponse: IApiResponse | null = null;
+    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/profiles?id=${profile.id}`, {method: "DELETE"})
+        .then(resp => resp.json())
+        .then(data => {
+            deleteResponse = {
+                message: data.message,
+                success: data.success
+            }
+        });
+    if (deleteResponse) {
+        return deleteResponse;
+    }
+    throw Error("Could not delete profile.");  
+}
+
 export async function createProfile(newProfile: Profile):Promise<CreateProfileResponse> {
     let createProfileResponse: CreateProfileResponse | null = null;
     const postBody = {

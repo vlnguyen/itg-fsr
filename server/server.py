@@ -242,6 +242,32 @@ def add_profile():
         'profile': profile
     }
 
+@app.route('/profiles', methods=['DELETE'])
+def delete_profile():
+    profile_id = request.args.get('id')
+    if not profile_id:
+        return {
+            'message': 'Must provide a profile id.',
+            'success': False
+        }
+    conn = db_create_connection()
+    rows_affected = db_delete_profile(conn, profile_id)
+    conn.close()
+
+    message = ''
+    success = False
+
+    if rows_affected == 1:
+        message = 'Successfully deleted profile'
+        success = True
+    else:
+        message = 'Failed to delete profile'
+
+    return {
+        'message': message,
+        'success': success
+    }
+
 @app.route('/pads', methods=['GET'])
 def get_all_pads():
     conn = db_create_connection()
@@ -412,10 +438,10 @@ def db_delete_profile(conn, profile_id):
         c = conn.cursor()
         c.execute(query_delete_profile, (profile_id,))
         conn.commit()
-        return True
+        return c.rowcount
     except Error as e:
         print(e)
-        return False
+        return 0
 
 def db_select_all_pads(conn):
     query_select_all_pads = '''
