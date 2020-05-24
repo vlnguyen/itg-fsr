@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { DEFAULT_PAD_ID } from './App.constants';
 import { getInitialLoad, updateProfile, getPressures, getThresholds, setThresholdsOnPad } from './App.api.handler';
-import { Profile, Arrows } from './App.types';
-
-
+import { Profile, Arrows, ProfileControlStatus } from './App.types';
 
 const ProfileControls = (
   profiles: Profile[],
@@ -14,29 +12,111 @@ const ProfileControls = (
   selectedProfile: Profile,
   setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
   messages: string[],
-  setMessages: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  profileControlStatus: ProfileControlStatus,
+  setProfileControlStatus: React.Dispatch<React.SetStateAction<ProfileControlStatus>>,
+  updatedName: string,
+  setUpdatedName: React.Dispatch<React.SetStateAction<string>>
+  ) => {    
     return (
       <div className="grid__center">
-        <select onChange={e => handleProfileSelect(e, profiles, setSelectedProfile, setThresholds)}>
-          {profiles.map(profile => 
-            <option value={profile.id} selected={profile.id === selectedProfile.id}>
-              {profile.name}
-            </option>
-          )}
-        </select>
-        <button onClick={() =>
-          handleProfileSave(
-            profiles, setProfiles,
-            selectedProfile, setSelectedProfile, thresholds, 
-            messages, setMessages
-          )}
-        >
-          Save to Profile
-        </button>
-        {/* TODO: Profile rename, new profile. */}
+        {profileControlStatus === ProfileControlStatus.NONE && 
+          ProfileControlsNoneState(
+            profiles, setProfiles, 
+            thresholds, setThresholds, 
+            selectedProfile, setSelectedProfile, 
+            messages, setMessages, 
+            setProfileControlStatus,
+            setUpdatedName
+          )
+        }
+        {profileControlStatus === ProfileControlStatus.RENAME && 
+          <>
+            <input type="text" value={updatedName} onChange={e => setUpdatedName(e.target.value)} />
+            <button onClick={() => {
+              handleProfileRename(
+                selectedProfile, updatedName, setSelectedProfile, 
+                profiles, setProfiles,
+                messages, setMessages
+              );
+              setUpdatedName("");
+              setProfileControlStatus(ProfileControlStatus.NONE);
+            }}>
+              Confirm Rename
+            </button>
+            <button onClick={() => {
+              setUpdatedName("");
+              setProfileControlStatus(ProfileControlStatus.NONE);
+            }}>
+              Cancel
+            </button>
+          </>
+        }
       </div>
     );
+}
+
+const ProfileControlsNoneState = (
+  profiles: Profile[],
+  setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
+  thresholds: number[],
+  setThresholds: React.Dispatch<React.SetStateAction<number[]>>,
+  selectedProfile: Profile,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  setProfileControlStatus: React.Dispatch<React.SetStateAction<ProfileControlStatus>>,
+  setUpdatedName: React.Dispatch<React.SetStateAction<string>>
+  ) => {  
+  return (
+    <>
+      <select onChange={e => handleProfileSelect(e, profiles, setSelectedProfile, setThresholds)}>
+        {profiles.map(profile =>
+          <option value={profile.id} selected={profile.id === selectedProfile.id}>
+            {profile.name}
+          </option>
+        )}
+      </select>
+      <button onClick={() =>
+        handleProfileSave(
+          profiles, setProfiles,
+          selectedProfile, setSelectedProfile, thresholds,
+          messages, setMessages
+        )}
+      >
+        Save to Profile
+      </button>
+      <button onClick={() => {
+        setUpdatedName(selectedProfile.name);
+        setProfileControlStatus(ProfileControlStatus.RENAME);
+      }}>
+        Rename Profile
+      </button>
+    </>
+  )
+};
+
+const handleProfileRename = (
+  selectedProfile: Profile,
+  updatedName: string,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  profiles: Profile[],
+  setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
+  messages: string[],
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>
+) => {
+  const updatedProfile = {...selectedProfile};
+  updatedProfile.name = updatedName;
+  updateProfile(updatedProfile).then(resp => {
+    addMessageToLog(resp.message, messages, setMessages);
+  })
+
+  const updatedProfileList = [...profiles];
+  const updatedProfileIndex = profiles.findIndex(profile => profile.id === selectedProfile.id)!;
+  updatedProfileList.splice(updatedProfileIndex, 1, updatedProfile);
+  setProfiles(updatedProfileList);
+
+  setSelectedProfile(updatedProfile);
 }
 
 const handleProfileSelect = (
@@ -188,6 +268,8 @@ function App() {
   const [messages, setMessages] = useState<string[]>([]);
   const [selectedProfile, setSelectedProfile] = useState<Profile>(new Profile(0, 'Invalid Profile', []));
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [profileControlStatus, setProfileControlStatus] = useState<ProfileControlStatus>(ProfileControlStatus.NONE);
+  const [updatedName, setUpdatedName] = useState<string>("");
  
   useEffect(() => {
     getInitialLoad().then(resp => {
@@ -216,7 +298,9 @@ function App() {
           profiles, setProfiles,
           thresholds, setThresholds,
           selectedProfile, setSelectedProfile,
-          messages, setMessages
+          messages, setMessages,
+          profileControlStatus, setProfileControlStatus,
+          updatedName, setUpdatedName
         )}
         {PerArrowSensitivityInput(Arrows.RIGHT, thresholds, setThresholds)}
         <div className="grid__item" />

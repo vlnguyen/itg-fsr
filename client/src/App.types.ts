@@ -11,6 +11,11 @@ export enum Arrows {
     RIGHT = 3
 }
 
+export enum ProfileControlStatus {
+    NONE = -1,
+    RENAME
+}
+
 export class InitialLoadResponse implements IApiResponse {
     constructor(data: any) {
         this.message = data.message;
