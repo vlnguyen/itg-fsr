@@ -2,15 +2,9 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { DEFAULT_PAD_ID } from './App.constants';
 import { getInitialLoad, updateProfile, getPressures, getThresholds, setThresholdsOnPad } from './App.api.handler';
-import { Profile } from './App.types';
+import { Profile, Arrows } from './App.types';
 
-enum Arrows {
-  NONE = -1,
-  LEFT = 0,
-  DOWN = 1,
-  UP = 2,
-  RIGHT = 3
-}
+
 
 const ProfileControls = (
   profiles: Profile[],

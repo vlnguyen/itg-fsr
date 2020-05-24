@@ -3,6 +3,14 @@ export interface IApiResponse {
     success: boolean;
 }
 
+export enum Arrows {
+    NONE = -1,
+    LEFT = 0,
+    DOWN = 1,
+    UP = 2,
+    RIGHT = 3
+}
+
 export class InitialLoadResponse implements IApiResponse {
     constructor(data: any) {
         this.message = data.message;
