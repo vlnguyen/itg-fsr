@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_ID } from './App.constants';
-import { getInitialLoad, updateProfile } from './App.api.handler';
+import { getInitialLoad, updateProfile, getPressures } from './App.api.handler';
 import { Profile } from './App.types';
 
 enum Arrows {
@@ -157,11 +157,9 @@ const getPerArrowInputName = (arrow: Arrows):string => {
 const handleGetPressures = async (
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    fetch(`http://${SERVER_URL}:${SERVER_PORT}/pressures`)
-      .then(resp => resp.json())
-      .then(data => {
-        addMessageToLog(data.message, messages, setMessages);
-    });
+    getPressures().then(resp => 
+      addMessageToLog(resp.message, messages, setMessages)
+    );
 }
 
 const handleGetThresholds = async (

@@ -14,6 +14,22 @@ export async function getInitialLoad():Promise<InitialLoadResponse> {
     throw Error("Could not fetch initial load.");
 }
 
+export async function getPressures():Promise<IApiResponse> {
+    let getPressuresResponse: IApiResponse | null = null;
+    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/pressures`)
+        .then(resp => resp.json())
+        .then(data => {
+            getPressuresResponse = {
+                message: data.message,
+                success: data.success
+            };
+        });
+    if (getPressuresResponse) {
+        return getPressuresResponse;
+    }
+    throw Error("Could not get current pressures.");
+}
+
 export async function updateProfile(updatedProfile: Profile):Promise<IApiResponse> {
     let saveProfileResponse: IApiResponse | null = null;
     const postBody = {
