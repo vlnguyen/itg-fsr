@@ -89,6 +89,7 @@ const ProfileControlsDefaultState = (
           selectedProfile, setSelectedProfile, thresholds,
           messages, setMessages
         )}
+        disabled={thresholds.toString() === selectedProfile.values.toString()}
       >
         Save to Profile
       </button>
