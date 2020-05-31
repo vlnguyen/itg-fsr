@@ -393,7 +393,7 @@ const getPerArrowInputName = (arrow: Arrows):string => {
 const handleGetPressures = async (
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    getPressures().then(resp => 
+    await getPressures().then(resp => 
       addMessageToLog(resp.message, messages, setMessages)
     );
 }
@@ -401,7 +401,7 @@ const handleGetPressures = async (
 const handleGetThresholds = async (
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    getThresholds().then(resp => 
+    await getThresholds().then(resp => 
       addMessageToLog(resp.message, messages, setMessages)
     );
 }
@@ -411,7 +411,7 @@ const handleSetThresholds = async (
   thresholds: number[],
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    setThresholdsOnPad(DEFAULT_PAD_ID, selectedProfile, thresholds).then(resp =>
+    await setThresholdsOnPad(DEFAULT_PAD_ID, selectedProfile, thresholds).then(resp =>
       addMessageToLog(resp.message, messages, setMessages)
     );
 }
@@ -432,7 +432,8 @@ function App() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [profileControlStatus, setProfileControlStatus] = useState<ProfileControlStatus>(ProfileControlStatus.NONE);
   const [updatedName, setUpdatedName] = useState<string>("");
- 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   useEffect(() => {
     getInitialLoad().then(resp => {
       setSelectedProfile(resp.pad.profile);
@@ -469,14 +470,38 @@ function App() {
         {PerArrowSensitivityInput(Arrows.DOWN, thresholds, setThresholds)}
         <div className="grid__item" />
       </div>
-      <button className="apiButton" onClick={() => handleSetThresholds(selectedProfile, thresholds, messages, setMessages)}>
+      <button
+        className="apiButton"
+        onClick={async () => {
+          setIsLoading(true);
+          await handleSetThresholds(selectedProfile, thresholds, messages, setMessages);
+          setIsLoading(false);
+        }}
+        disabled={isLoading}
+      >
          Apply Profile to Pad
       </button>
       <textarea value={messages.join('\n')} readOnly />
-      <button className="apiButton" onClick={() => handleGetPressures(messages, setMessages)}>
+      <button
+        className="apiButton"
+        onClick={async () => {
+          setIsLoading(true);
+          await handleGetPressures(messages, setMessages);
+          setIsLoading(false);
+        }}
+        disabled={isLoading}
+      >
         Get Pressures
       </button>
-      <button className="apiButton" onClick={() => handleGetThresholds(messages, setMessages)}>
+      <button
+        className="apiButton"
+        onClick={async () => {
+          setIsLoading(true);
+          await handleGetThresholds(messages, setMessages);
+          setIsLoading(false);
+        }}
+        disabled={isLoading}
+      >
         Get Thresholds
       </button>
     </div>
