@@ -7,6 +7,8 @@ from sqlite3 import Error
 # Constants
 SERVER_PORT = 5555
 SERVER_HOST = '0.0.0.0'
+P1_PORT = "COM5"
+P2_PORT = "COM3"
 
 # Initialize app
 app = Flask(__name__)
@@ -14,7 +16,7 @@ CORS(app)
 
 # Initialize serial
 serial_p2 = serial.Serial()
-serial_p2.port = "COM3"
+serial_p2.port = P2_PORT
 serial_p2.baudrate = 9600
 serial_p2.setDTR(False)
 serial_p2.open()
