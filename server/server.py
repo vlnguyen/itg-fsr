@@ -344,13 +344,15 @@ def db_initialize_profiles_table_if_empty(conn):
         return False
 
 
-def db_create_default_profile_if_empty(conn):
+def db_create_default_profiles_if_empty(conn):
     profiles = db_select_all_profiles(conn)
     if not profiles:
-        thresholds_response = get_thresholds()
         try:
-            db_insert_new_profile(conn, 'Default', thresholds_response['values'])
-            print(f"Created default profile: Default {thresholds_response['values']}")
+            values = [200, 200, 200, 200]
+            db_insert_new_profile(conn, 'P1 Default', values)
+            print(f"Created default profile: P1 Default {values}")
+            db_insert_new_profile(conn, 'P2 Default', values)
+            print(f"Created default profile: P2 Default {values}")
             return True
         except Error as e:
             print(e)
@@ -377,12 +379,14 @@ def db_initialize_pads_table_if_empty(conn):
         return False
 
 
-def db_create_default_pad_if_empty(conn):
+def db_create_default_pads_if_empty(conn):
     pads = db_select_all_pads(conn)
     if not pads:
         try:
-            db_insert_new_pad(conn, 'Default Pad', 1)
-            print(f"Created default pad: Default Pad (Profile ID: 1)")
+            db_insert_new_pad(conn, 'P1 Pad', 1)
+            print(f"Created default pad: P1 Pad (Profile ID: 1)")
+            db_insert_new_pad(conn, 'P2 Pad', 2)
+            print(f"Created default pad: P2 Pad (Profile ID: 2)")
             return True
         except Error as e:
             print(e)
@@ -532,9 +536,9 @@ if __name__ == '__main__':
         print("Error establishing connection to profiles database.")
         exit()
     db_initialize_profiles_table_if_empty(conn)
-    db_create_default_profile_if_empty(conn)
+    db_create_default_profiles_if_empty(conn)
     db_initialize_pads_table_if_empty(conn)
-    db_create_default_pad_if_empty(conn)
+    db_create_default_pads_if_empty(conn)
     # Close the connection, open as needed
     conn.close()
 
