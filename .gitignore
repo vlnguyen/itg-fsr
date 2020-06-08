@@ -1,3 +1,5 @@
 .DS_Store
 *.db
 *.ps1
+*.xml
+*.iml
