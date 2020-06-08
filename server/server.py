@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from flask_cors import CORS
 import serial
 import sqlite3
@@ -26,7 +26,7 @@ serial_p2.open()
 @app.route('/', methods=['GET'])
 def index():
     conn = db_create_connection()
-    
+
     pad_id = request.args.get('padId')
     invalid_pad = {
         'id': 0,
@@ -45,9 +45,9 @@ def index():
 
         if pads == [] or profiles == []:
             message = ''
-            if pads == []:
+            if not pads:
                 message = f"{message} No pad found with id = {pad_id}."
-            if profiles == []:
+            if not profiles:
                 message = f"{message} No profiles found on the database."
             return {
                 'message': message,
@@ -68,15 +68,15 @@ def index():
                         'values': pads[0][5:]
                     },
                 },
-                'profiles':[
+                'profiles': [
                     {
                         'id': profile[0],
                         'name': profile[1],
                         'values': profile[2:]
-                    } 
+                    }
                     for profile in profiles
                 ],
-            } 
+            }
     return {
         'message': "Must supply a padId",
         'success': False,
@@ -84,25 +84,26 @@ def index():
         'profiles': [],
     }
 
+
 @app.route('/thresholds', methods=['POST'])
 def set_thresholds():
     message = ''
     success = False
-    
+
     req_data = request.get_json()
     try:
-        ## Serial input to the controller to apply new thresholds
+        # Serial input to the controller to apply new thresholds
         values = ','.join(str(x) for x in request.get_json()['values']) + '\n'
         serial_p2.write(values.encode())
-        ## Serial call to get the current thresholds back
+        # Serial call to get the current thresholds back
         serial_p2.write("thresholds".encode())
         serial_response = f'New Thresholds: {serial_p2.readline().decode().strip()}'
 
-        ## Update the pad to associate with given profile
+        # Update the pad to associate with given profile
         conn = db_create_connection()
         success = db_update_pad_by_id(conn, req_data['padId'], req_data['profile']['id'])
         conn.close()
-        
+
         if success:
             message = f"Applied profile: {req_data['profile']['name']} ({serial_response})"
         else:
@@ -110,11 +111,12 @@ def set_thresholds():
     except Exception as e:
         message = str(e),
         success = False
-    
+
     return {
         'message': message,
         'success': success
     }
+
 
 @app.route('/thresholds', methods=['GET'])
 def get_thresholds():
@@ -129,12 +131,13 @@ def get_thresholds():
         success = True
     except Exception as e:
         message = str(e)
-    
+
     return {
         'message': message,
         'values': values,
         'success': success
     }
+
 
 @app.route('/pressures', methods=['GET'])
 def get_pressures():
@@ -146,22 +149,23 @@ def get_pressures():
         success = True
     except Exception as e:
         message = str(e)
-    
+
     return {
         'message': message,
         'success': success
     }
 
+
 @app.route('/profiles', methods=['GET'])
 def get_all_profiles():
     conn = db_create_connection()
-    
+
     message = ''
 
     profile_id = request.args.get('id')
     if profile_id:
         profiles = db_select_profile_by_id(conn, profile_id)
-        if profiles == []:
+        if not profiles:
             message = f'No profile found with id = {profile_id}.'
         else:
             message = f'Retrieved profile: {profiles[0][1]}.'
@@ -178,10 +182,11 @@ def get_all_profiles():
                 'id': profile[0],
                 'name': profile[1],
                 'values': profile[2:]
-            } 
+            }
             for profile in profiles
         ]
     }
+
 
 @app.route('/profiles', methods=['POST'])
 def update_profile():
@@ -195,10 +200,11 @@ def update_profile():
     profile_name = req_data['name']
     db_update_existing_profile(conn, req_data['id'], profile_name, req_data['values'])
     conn.close()
-    return { 
+    return {
         'message': f'Saved profile: {profile_name}',
         'success': True,
     }
+
 
 @app.route('/profiles', methods=['PUT'])
 def add_profile():
@@ -219,7 +225,7 @@ def add_profile():
 
     profile_name = req_data['name']
     values = req_data['values']
-    
+
     conn = db_create_connection()
     new_profile_id = db_insert_new_profile(conn, profile_name, values)
     conn.close()
@@ -238,11 +244,12 @@ def add_profile():
             'values': req_data['values']
         }
 
-    return { 
+    return {
         'message': message,
         'success': success,
         'profile': profile
     }
+
 
 @app.route('/profiles', methods=['DELETE'])
 def delete_profile():
@@ -256,7 +263,6 @@ def delete_profile():
     rows_affected = db_delete_profile(conn, profile_id)
     conn.close()
 
-    message = ''
     success = False
 
     if rows_affected == 1:
@@ -270,17 +276,17 @@ def delete_profile():
         'success': success
     }
 
+
 @app.route('/pads', methods=['GET'])
 def get_all_pads():
     conn = db_create_connection()
-    
-    message = ''
+
     success = True
 
     pad_id = request.args.get('id')
     if pad_id:
         pads = db_select_pad_by_id(conn, pad_id)
-        if pads == []:
+        if not pads:
             message = f'No pad found with id = {pad_id}.'
             success = False
         else:
@@ -299,10 +305,11 @@ def get_all_pads():
                 'name': pad[1],
                 'profileId': pad[2],
                 'thresholds': pad[5:]
-            } 
+            }
             for pad in pads
         ]
-    } 
+    }
+
 
 # Database functions
 def db_create_connection():
@@ -312,7 +319,8 @@ def db_create_connection():
         conn = sqlite3.connect('./profiles.db')
     except Error as e:
         print(e)
-    return conn      
+    return conn
+
 
 def db_initialize_profiles_table_if_empty(conn):
     query_create_profiles_table = """
@@ -335,10 +343,11 @@ def db_initialize_profiles_table_if_empty(conn):
         print(e)
         return False
 
+
 def db_create_default_profile_if_empty(conn):
     profiles = db_select_all_profiles(conn)
-    if profiles == []:
-        thresholds_response = get_thresholds() 
+    if not profiles:
+        thresholds_response = get_thresholds()
         try:
             db_insert_new_profile(conn, 'Default', thresholds_response['values'])
             print(f"Created default profile: Default {thresholds_response['values']}")
@@ -346,6 +355,7 @@ def db_create_default_profile_if_empty(conn):
         except Error as e:
             print(e)
             return False
+
 
 def db_initialize_pads_table_if_empty(conn):
     query_create_pads_table = """
@@ -366,16 +376,18 @@ def db_initialize_pads_table_if_empty(conn):
         print(e)
         return False
 
+
 def db_create_default_pad_if_empty(conn):
     pads = db_select_all_pads(conn)
-    if pads == []:
+    if not pads:
         try:
             db_insert_new_pad(conn, 'Default Pad', 1)
             print(f"Created default pad: Default Pad (Profile ID: 1)")
             return True
         except Error as e:
             print(e)
-            return False        
+            return False
+
 
 def db_insert_new_profile(conn, name, values):
     query_insert_new_profile = """
@@ -391,6 +403,7 @@ def db_insert_new_profile(conn, name, values):
         print(e)
         return 0
 
+
 def db_select_profile_by_id(conn, profile_id):
     query_select_profile_by_id = '''SELECT id, name, pin0, pin1, pin2, pin3 FROM profiles WHERE id = ?'''
     rows = []
@@ -402,6 +415,7 @@ def db_select_profile_by_id(conn, profile_id):
     except Error as e:
         print(e)
     return rows
+
 
 def db_select_all_profiles(conn):
     query_get_all_profiles = '''SELECT * FROM profiles ORDER BY name'''
@@ -415,12 +429,13 @@ def db_select_all_profiles(conn):
         print(e)
     return rows
 
+
 def db_update_existing_profile(conn, profile_id, name, values):
     try:
         c = conn.cursor()
-        if values == []:
+        if not values:
             query_update_existing_profile_name = '''UPDATE profiles SET name = ?, WHERE id = ?;'''
-            c.execute(query_update_existing_profile_name (name, profile_id,))
+            c.execute(query_update_existing_profile_name, (name, profile_id,))
         else:
             query_update_existing_profiles = ''' 
             UPDATE profiles
@@ -434,6 +449,7 @@ def db_update_existing_profile(conn, profile_id, name, values):
         print(e)
         return False
 
+
 def db_delete_profile(conn, profile_id):
     query_delete_profile = '''DELETE FROM profiles WHERE id = ?;'''
     try:
@@ -445,6 +461,7 @@ def db_delete_profile(conn, profile_id):
         print(e)
         return 0
 
+
 def db_select_all_pads(conn):
     query_select_all_pads = '''
         SELECT * FROM pads PA
@@ -454,12 +471,13 @@ def db_select_all_pads(conn):
     try:
         c = conn.cursor()
         c.execute(query_select_all_pads)
-        
+
         rows = c.fetchall()
         return rows
     except Error as e:
         print(e)
     return rows
+
 
 def db_select_pad_by_id(conn, pad_id):
     query_select_pad_by_id = '''
@@ -477,6 +495,7 @@ def db_select_pad_by_id(conn, pad_id):
         print(e)
     return rows
 
+
 def db_insert_new_pad(conn, name, profile_id):
     query_insert_new_pad = """INSERT INTO pads (name, profileId) VALUES (?,?);"""
     try:
@@ -487,6 +506,7 @@ def db_insert_new_pad(conn, name, profile_id):
     except Error as e:
         print(e)
         return False
+
 
 def db_update_pad_by_id(conn, pad_id, profile_id):
     try:
@@ -502,12 +522,13 @@ def db_update_pad_by_id(conn, pad_id, profile_id):
     except Error as e:
         print(str(e))
         return False
-    
+
+
 # Main function
 if __name__ == '__main__':
     # Create connection to database
     conn = db_create_connection()
-    if conn == None:
+    if conn is None:
         print("Error establishing connection to profiles database.")
         exit()
     db_initialize_profiles_table_if_empty(conn)
