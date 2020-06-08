@@ -13,11 +13,11 @@ app = Flask(__name__)
 CORS(app)
 
 # Initialize serial
-s = serial.Serial()
-s.port = "COM3"
-s.baudrate = 9600
-s.setDTR(False)
-s.open()
+serial_p2 = serial.Serial()
+serial_p2.port = "COM3"
+serial_p2.baudrate = 9600
+serial_p2.setDTR(False)
+serial_p2.open()
 
 
 # Routes
@@ -91,10 +91,10 @@ def set_thresholds():
     try:
         ## Serial input to the controller to apply new thresholds
         values = ','.join(str(x) for x in request.get_json()['values']) + '\n'
-        s.write(values.encode())
+        serial_p2.write(values.encode())
         ## Serial call to get the current thresholds back
-        s.write("thresholds".encode())
-        serial_response = f'New Thresholds: {s.readline().decode().strip()}'
+        serial_p2.write("thresholds".encode())
+        serial_response = f'New Thresholds: {serial_p2.readline().decode().strip()}'
 
         ## Update the pad to associate with given profile
         conn = db_create_connection()
@@ -120,8 +120,8 @@ def get_thresholds():
     values = []
     success = False
     try:
-        s.write("thresholds".encode())
-        s_resp = s.readline().decode().strip()
+        serial_p2.write("thresholds".encode())
+        s_resp = serial_p2.readline().decode().strip()
         message = "Current Thresholds: " + s_resp
         values = [int(x) for x in s_resp.split(',')]
         success = True
@@ -139,8 +139,8 @@ def get_pressures():
     message = ''
     success = False
     try:
-        s.write("pressures".encode())        
-        message = 'Current pressures: ' + s.readline().decode().strip()
+        serial_p2.write("pressures".encode())
+        message = 'Current pressures: ' + serial_p2.readline().decode().strip()
         success = True
     except Exception as e:
         message = str(e)
