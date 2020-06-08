@@ -18,6 +18,11 @@ export enum ProfileControlStatus {
     DELETE
 }
 
+export enum PadSide {
+    P1 = 1,
+    P2 = 2
+}
+
 export class InitialLoadResponse implements IApiResponse {
     constructor(data: any) {
         this.message = data.message;

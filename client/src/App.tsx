@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { DEFAULT_PAD_ID } from './App.constants';
+import { DEFAULT_PAD_SIDE } from './App.constants';
 import { getInitialLoad, updateProfile, getPressures, getThresholds, setThresholdsOnPad, createProfile, deleteProfile } from './App.api.handler';
-import { Profile, Arrows, ProfileControlStatus } from './App.types';
+import { Profile, Arrows, ProfileControlStatus, PadSide } from './App.types';
 
 const ProfileControls = (
   profiles: Profile[],
@@ -347,6 +347,44 @@ const PlusMinusButtons = (
     );
 };
 
+const PadSideSelector = (
+  selectedPadSide: PadSide,
+  setSelectedPadSide: React.Dispatch<React.SetStateAction<PadSide>>) => {
+    return (
+      <div className="PadSideSelector">
+        <header className="App-header">
+          Player {selectedPadSide} Settings
+        </header>
+        <label>
+          <input 
+            type="radio" 
+            value={PadSide.P1} 
+            name="padSide"
+            checked={selectedPadSide === PadSide.P1} 
+            onChange={e => handlePadSideChange(e, setSelectedPadSide)}
+          /> 
+          P1
+        </label>
+        {" "}
+        <label>
+          <input 
+            type="radio" 
+            name="padSide"
+            value={PadSide.P2} 
+            checked={selectedPadSide === PadSide.P2}
+            onChange={e => handlePadSideChange(e, setSelectedPadSide)}
+          /> 
+          P2
+        </label> 
+      </div>
+    );
+};
+
+const handlePadSideChange = (
+  e: React.ChangeEvent<HTMLInputElement>,
+  setSelectedPadSide: React.Dispatch<React.SetStateAction<PadSide>>) => {
+    setSelectedPadSide(parseInt(e.target.value));
+};
 const handleLowerThreshold = (
   e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   arrow: Arrows,
@@ -411,7 +449,7 @@ const handleSetThresholds = async (
   thresholds: number[],
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    await setThresholdsOnPad(DEFAULT_PAD_ID, selectedProfile, thresholds).then(resp =>
+    await setThresholdsOnPad(DEFAULT_PAD_SIDE, selectedProfile, thresholds).then(resp =>
       addMessageToLog(resp.message, messages, setMessages)
     );
 }
@@ -428,6 +466,7 @@ const addMessageToLog = (
 function App() {
   const [thresholds, setThresholds] = useState<number[]>([]);
   const [messages, setMessages] = useState<string[]>([]);
+  const [selectedPadSide, setSelectedPadSide] = useState<PadSide>(DEFAULT_PAD_SIDE);
   const [selectedProfile, setSelectedProfile] = useState<Profile>(new Profile(0, 'Invalid Profile', []));
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [profileControlStatus, setProfileControlStatus] = useState<ProfileControlStatus>(ProfileControlStatus.NONE);
@@ -452,6 +491,7 @@ function App() {
 
   return (    
     <div className="App">
+      {PadSideSelector(selectedPadSide, setSelectedPadSide)}
       <div className="grid">
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.UP, thresholds, setThresholds)}

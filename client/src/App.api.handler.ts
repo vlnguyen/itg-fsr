@@ -1,9 +1,9 @@
 import { InitialLoadResponse, Profile, IApiResponse, SetThresholdsOnPadRequest, CreateNewProfileResponse as CreateProfileResponse } from "./App.types";
-import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_ID } from "./App.constants";
+import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_SIDE } from "./App.constants";
 
 export async function getInitialLoad():Promise<InitialLoadResponse> {
     let initialLoadResponse: InitialLoadResponse | null = null;
-    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/?padId=${DEFAULT_PAD_ID}`)
+    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/?padId=${DEFAULT_PAD_SIDE}`)
         .then(resp => resp.json())
         .then(data => {
             initialLoadResponse = new InitialLoadResponse(data);
@@ -54,7 +54,7 @@ export async function setThresholdsOnPad(padId: number, selectedProfile: Profile
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(
-            new SetThresholdsOnPadRequest(DEFAULT_PAD_ID, selectedProfile, thresholds)
+            new SetThresholdsOnPadRequest(DEFAULT_PAD_SIDE, selectedProfile, thresholds)
         )
     };
     await fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds`, postBody)

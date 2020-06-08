@@ -11,7 +11,12 @@
 
 .App-header {
   font-size: calc(10px + 2vmin);
+  padding-bottom: 8px;
   color: white;
+}
+
+.PadSideSelector {
+  text-align: center;
 }
 
 .App-link {
