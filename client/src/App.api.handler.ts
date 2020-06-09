@@ -1,5 +1,5 @@
 import { InitialLoadResponse, Profile, IApiResponse, SetThresholdsOnPadRequest, CreateNewProfileResponse as CreateProfileResponse, PadSide } from "./App.types";
-import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_SIDE } from "./App.constants";
+import { SERVER_URL, SERVER_PORT } from "./App.constants";
 
 export async function getInitialLoad():Promise<InitialLoadResponse> {
     let initialLoadResponse: InitialLoadResponse | null = null;

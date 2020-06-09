@@ -300,7 +300,7 @@ const handleProfileDelete = (
         setProfiles(newProfilesList);
         
         /* profile.id = 1 will always exist for P1, profile.id = 2 will always exist for P2 */
-        const newSelectedProfile = profiles.find(profile => profile.id == selectedPadSide)!;
+        const newSelectedProfile = profiles.find(profile => profile.id === selectedPadSide)!;
         const updatedSelectedProfiles = {...selectedProfile};
         updatedSelectedProfiles[selectedPadSide] = newSelectedProfile;
         setSelectedProfile(updatedSelectedProfiles);
