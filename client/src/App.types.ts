@@ -27,13 +27,22 @@ export class InitialLoadResponse implements IApiResponse {
     constructor(data: any) {
         this.message = data.message;
         this.success = data.success;
-        this.pad = new Pad(
-            data.pad.id, 
-            data.pad.name, 
+        this.p1 = new Pad(
+            data.p1.id, 
+            data.p1.name, 
             new Profile(
-                data.pad.profile.id, 
-                data.pad.profile.name, 
-                data.pad.profile.values
+                data.p1.profile.id, 
+                data.p1.profile.name, 
+                data.p1.profile.values
+            )
+        );
+        this.p2 = new Pad(
+            data.p2.id, 
+            data.p2.name, 
+            new Profile(
+                data.p2.profile.id, 
+                data.p2.profile.name, 
+                data.p2.profile.values
             )
         );
         this.profiles = data.profiles.map((profile:any) => 
@@ -43,7 +52,8 @@ export class InitialLoadResponse implements IApiResponse {
     }
     message: string;
     success: boolean;
-    pad: Pad;
+    p1: Pad;
+    p2: Pad;
     profiles: Profile[];
     thresholds: number[];
 }

@@ -3,7 +3,7 @@ import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_SIDE } from "./App.constants";
 
 export async function getInitialLoad():Promise<InitialLoadResponse> {
     let initialLoadResponse: InitialLoadResponse | null = null;
-    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/?padId=${DEFAULT_PAD_SIDE}`)
+    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/`)
         .then(resp => resp.json())
         .then(data => {
             initialLoadResponse = new InitialLoadResponse(data);

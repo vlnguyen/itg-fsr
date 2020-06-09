@@ -475,8 +475,8 @@ function App() {
 
   useEffect(() => {
     getInitialLoad().then(resp => {
-      setSelectedProfile(resp.pad.profile);
-      setThresholds(resp.pad.profile.values);
+      setSelectedProfile(resp.p1.profile);
+      setThresholds(resp.p1.profile.values);
       setProfiles(resp.profiles);
     });
   }, []);

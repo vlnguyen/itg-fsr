@@ -26,62 +26,40 @@ serial_p2.open()
 @app.route('/', methods=['GET'])
 def index():
     conn = db_create_connection()
+    p1_pad = db_select_pad_by_id(conn, 1)
+    p2_pad = db_select_pad_by_id(conn, 2)
+    profiles = db_select_all_profiles(conn)
+    conn.close()
 
-    pad_id = request.args.get('padId')
-    invalid_pad = {
-        'id': 0,
-        'name': '',
-        'profile': {
-            'id': 0,
-            'name': '',
-            'values': []
-        }
-    }
-
-    if pad_id:
-        pads = db_select_pad_by_id(conn, pad_id)
-        profiles = db_select_all_profiles(conn)
-        conn.close()
-
-        if pads == [] or profiles == []:
-            message = ''
-            if not pads:
-                message = f"{message} No pad found with id = {pad_id}."
-            if not profiles:
-                message = f"{message} No profiles found on the database."
-            return {
-                'message': message,
-                'success': False,
-                'pad': invalid_pad,
-                'profiles': [],
-            }
-        else:
-            return {
-                'message': 'Loaded current pad and profile.',
-                'success': True,
-                'pad': {
-                    'id': pads[0][0],
-                    'name': pads[0][1],
-                    'profile': {
-                        'id': pads[0][3],
-                        'name': pads[0][4],
-                        'values': pads[0][5:]
-                    },
-                },
-                'profiles': [
-                    {
-                        'id': profile[0],
-                        'name': profile[1],
-                        'values': profile[2:]
-                    }
-                    for profile in profiles
-                ],
-            }
     return {
-        'message': "Must supply a padId",
-        'success': False,
-        'pad': invalid_pad,
-        'profiles': [],
+        'message': 'Loaded current pad and profile.',
+        'success': True,
+        'p1': {
+            'id': p1_pad[0][0],
+            'name': p1_pad[0][1],
+            'profile': {
+                'id': p1_pad[0][3],
+                'name': p1_pad[0][4],
+                'values': p1_pad[0][5:]
+            }
+        },
+        'p2': {
+            'id': p2_pad[0][0],
+            'name': p2_pad[0][1],
+            'profile': {
+                'id': p2_pad[0][3],
+                'name': p2_pad[0][4],
+                'values': p2_pad[0][5:]
+            }
+        },
+        'profiles': [
+            {
+                'id': profile[0],
+                'name': profile[1],
+                'values': profile[2:]
+            }
+            for profile in profiles
+        ],
     }
 
 
@@ -492,7 +470,7 @@ def db_select_pad_by_id(conn, pad_id):
     rows = []
     try:
         c = conn.cursor()
-        c.execute(query_select_pad_by_id, (pad_id))
+        c.execute(query_select_pad_by_id, (pad_id,))
 
         rows = c.fetchall()
     except Error as e:
