@@ -2,21 +2,22 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import { DEFAULT_PAD_SIDE } from './App.constants';
 import { getInitialLoad, updateProfile, getPressures, getThresholds, setThresholdsOnPad, createProfile, deleteProfile } from './App.api.handler';
-import { Profile, Arrows, ProfileControlStatus, PadSide } from './App.types';
+import { Profile, Arrows, ProfileControlStatus, PadSide, SelectedProfileState } from './App.types';
 
 const ProfileControls = (
   profiles: Profile[],
   setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
   thresholds: number[],
   setThresholds: React.Dispatch<React.SetStateAction<number[]>>,
-  selectedProfile: Profile,
-  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  selectedProfile: SelectedProfileState,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<SelectedProfileState>>,
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>,
   profileControlStatus: ProfileControlStatus,
   setProfileControlStatus: React.Dispatch<React.SetStateAction<ProfileControlStatus>>,
   updatedName: string,
-  setUpdatedName: React.Dispatch<React.SetStateAction<string>>
+  setUpdatedName: React.Dispatch<React.SetStateAction<string>>,
+  selectedPadSide: PadSide
   ) => {    
     return (
       <div className="grid__center">
@@ -24,10 +25,11 @@ const ProfileControls = (
           ProfileControlsDefaultState(
             profiles, setProfiles, 
             thresholds, setThresholds, 
-            selectedProfile, setSelectedProfile, 
+            selectedProfile, setSelectedProfile,
             messages, setMessages, 
             setProfileControlStatus,
-            setUpdatedName
+            setUpdatedName,
+            selectedPadSide
           )
         }
         {profileControlStatus === ProfileControlStatus.RENAME && 
@@ -36,17 +38,19 @@ const ProfileControls = (
             selectedProfile, setSelectedProfile,
             messages,setMessages,
             setProfileControlStatus,
-            updatedName, setUpdatedName
+            updatedName, setUpdatedName,
+            selectedPadSide
           )
         }
         {profileControlStatus === ProfileControlStatus.CREATE && 
           ProfileControlsCreateState(
             profiles, setProfiles,
             thresholds,
-            setSelectedProfile,
+            selectedProfile, setSelectedProfile,
             messages,setMessages,
             setProfileControlStatus,
-            updatedName, setUpdatedName
+            updatedName, setUpdatedName,
+            selectedPadSide
           )
         }
         {profileControlStatus === ProfileControlStatus.DELETE && 
@@ -55,7 +59,8 @@ const ProfileControls = (
             setThresholds,
             selectedProfile, setSelectedProfile,
             messages,setMessages,
-            setProfileControlStatus
+            setProfileControlStatus,
+            selectedPadSide
           )
         }
       </div>
@@ -67,18 +72,19 @@ const ProfileControlsDefaultState = (
   setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
   thresholds: number[],
   setThresholds: React.Dispatch<React.SetStateAction<number[]>>,
-  selectedProfile: Profile,
-  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  selectedProfile: SelectedProfileState,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<SelectedProfileState>>,
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>,
   setProfileControlStatus: React.Dispatch<React.SetStateAction<ProfileControlStatus>>,
-  setUpdatedName: React.Dispatch<React.SetStateAction<string>>
+  setUpdatedName: React.Dispatch<React.SetStateAction<string>>,
+  selectedPadSide: PadSide
   ) => {  
   return (
     <>
-      <select onChange={e => handleProfileSelect(e, profiles, setSelectedProfile, setThresholds)}>
+      <select onChange={e => handleProfileSelect(e, profiles, selectedProfile, setSelectedProfile, setThresholds, selectedPadSide)}>
         {profiles.map(profile =>
-          <option value={profile.id} selected={profile.id === selectedProfile.id}>
+          <option value={profile.id} selected={profile.id === selectedProfile[selectedPadSide].id}>
             {profile.name}
           </option>
         )}
@@ -87,14 +93,15 @@ const ProfileControlsDefaultState = (
         handleProfileSave(
           profiles, setProfiles,
           selectedProfile, setSelectedProfile, thresholds,
-          messages, setMessages
+          messages, setMessages,
+          selectedPadSide
         )}
-        disabled={thresholds.toString() === selectedProfile.values.toString()}
+        disabled={thresholds.toString() === selectedProfile[selectedPadSide].values.toString()}
       >
         Save to Profile
       </button>
       <button onClick={() => {
-        setUpdatedName(selectedProfile.name);
+        setUpdatedName(selectedProfile[selectedPadSide].name);
         setProfileControlStatus(ProfileControlStatus.RENAME);
       }}>
         Rename Profile
@@ -105,11 +112,13 @@ const ProfileControlsDefaultState = (
       }}>
         Create Profile
       </button>
-      {profiles.length > 1 && 
-        <button onClick={() => setProfileControlStatus(ProfileControlStatus.DELETE)}>
-          Delete Profile
-        </button>
-      }
+      <button 
+        onClick={() => setProfileControlStatus(ProfileControlStatus.DELETE)}
+        disabled={selectedProfile[selectedPadSide].id === 1 || selectedProfile[selectedPadSide].id === 2}
+      >
+        Delete Profile
+      </button>
+      
     </>
   )
 };
@@ -117,13 +126,14 @@ const ProfileControlsDefaultState = (
 const ProfileControlsRenameState = (
   profiles: Profile[],
   setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
-  selectedProfile: Profile,
-  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  selectedProfile: SelectedProfileState,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<SelectedProfileState>>,
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>,
   setProfileControlStatus: React.Dispatch<React.SetStateAction<ProfileControlStatus>>,
   updatedName: string,
-  setUpdatedName: React.Dispatch<React.SetStateAction<string>>
+  setUpdatedName: React.Dispatch<React.SetStateAction<string>>,
+  selectedPadSide: PadSide
 ) => {
   return (
     <>
@@ -132,7 +142,8 @@ const ProfileControlsRenameState = (
         handleProfileRename(
           selectedProfile, updatedName, setSelectedProfile, 
           profiles, setProfiles,
-          messages, setMessages
+          messages, setMessages,
+          selectedPadSide
         );
         setUpdatedName("");
         setProfileControlStatus(ProfileControlStatus.NONE);
@@ -153,22 +164,25 @@ const ProfileControlsCreateState = (
   profiles: Profile[],
   setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
   thresholds: number[],
-  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  selectedProfile: SelectedProfileState,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<SelectedProfileState>>,
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>,
   setProfileControlStatus: React.Dispatch<React.SetStateAction<ProfileControlStatus>>,
   updatedName: string,
-  setUpdatedName: React.Dispatch<React.SetStateAction<string>>
+  setUpdatedName: React.Dispatch<React.SetStateAction<string>>,
+  selectedPadSide: PadSide
 ) => {
   return (
     <>
       <input type="text" value={updatedName} onChange={e => setUpdatedName(e.target.value)} />
       <button onClick={() => {
         handleProfileCreate(
-          updatedName, setSelectedProfile,
+          updatedName, selectedProfile, setSelectedProfile,
           profiles, setProfiles,
           thresholds,
-          messages, setMessages
+          messages, setMessages,
+          selectedPadSide
         );
         setUpdatedName("");
         setProfileControlStatus(ProfileControlStatus.NONE);
@@ -189,21 +203,23 @@ const ProfileControlsDeleteState = (
   profiles: Profile[],
   setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
   setThresholds: React.Dispatch<React.SetStateAction<number[]>>,
-  selectedProfile: Profile,
-  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  selectedProfile: SelectedProfileState,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<SelectedProfileState>>,
   messages: string[],
   setMessages: React.Dispatch<React.SetStateAction<string[]>>,
-  setProfileControlStatus: React.Dispatch<React.SetStateAction<ProfileControlStatus>>
+  setProfileControlStatus: React.Dispatch<React.SetStateAction<ProfileControlStatus>>,
+  selectedPadSide: PadSide
 )  => {
   return (
     <>
-      Are you sure you want to delete profile {selectedProfile.name}?
+      Are you sure you want to delete profile {selectedProfile[selectedPadSide].name}?
       <button onClick={() => {
         handleProfileDelete(
           selectedProfile, setSelectedProfile,
           profiles, setProfiles,
           setThresholds,
-          messages, setMessages
+          messages, setMessages,
+          selectedPadSide
         );
         setProfileControlStatus(ProfileControlStatus.NONE);
       }}>
@@ -217,36 +233,39 @@ const ProfileControlsDeleteState = (
 }
 
 const handleProfileRename = (
-  selectedProfile: Profile,
+  selectedProfile: SelectedProfileState,
   updatedName: string,
-  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<SelectedProfileState>>,
   profiles: Profile[],
   setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
   messages: string[],
-  setMessages: React.Dispatch<React.SetStateAction<string[]>>
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  selectedPadSide: PadSide
 ) => {
-  const updatedProfile = {...selectedProfile};
-  updatedProfile.name = updatedName;
-  updateProfile(updatedProfile).then(resp => {
+  const updatedProfiles = {...selectedProfile};
+  updatedProfiles[selectedPadSide].name = updatedName;
+  updateProfile(updatedProfiles[selectedPadSide]).then(resp => {
     addMessageToLog(resp.message, messages, setMessages);
   })
 
   const updatedProfileList = [...profiles];
-  const updatedProfileIndex = profiles.findIndex(profile => profile.id === selectedProfile.id)!;
-  updatedProfileList.splice(updatedProfileIndex, 1, updatedProfile);
+  const updatedProfileIndex = profiles.findIndex(profile => profile.id === selectedProfile[selectedPadSide].id)!;
+  updatedProfileList.splice(updatedProfileIndex, 1, updatedProfiles[selectedPadSide]);
   setProfiles(updatedProfileList);
 
-  setSelectedProfile(updatedProfile);
+  setSelectedProfile(updatedProfiles);
 };
 
 const handleProfileCreate = (
   updatedName: string,
-  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  selectedProfile: SelectedProfileState,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<SelectedProfileState>>,
   profiles: Profile[],
   setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
   thresholds: number[],
   messages: string[],
-  setMessages: React.Dispatch<React.SetStateAction<string[]>>
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  selectedPadSide: PadSide
 ) => {
   const newProfile = new Profile(0, updatedName, thresholds);
   createProfile(newProfile).then(resp => {
@@ -255,28 +274,37 @@ const handleProfileCreate = (
       newProfile.id = resp.profile.id;
       const newProfilesList = [...profiles, newProfile];
       newProfilesList.sort((a,b) => a.name < b.name ? -1 : 1);
+
+      const updatedSelectedProfiles = {...selectedProfile};
+      updatedSelectedProfiles[selectedPadSide] = newProfile;
       setProfiles(newProfilesList);
-      setSelectedProfile(newProfile);
+      setSelectedProfile(updatedSelectedProfiles);
     }
   })
 };
 
 const handleProfileDelete = (
-  selectedProfile: Profile,
-  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  selectedProfile: SelectedProfileState,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<SelectedProfileState>>,
   profiles: Profile[],
   setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
   setThresholds: React.Dispatch<React.SetStateAction<number[]>>,
   messages: string[],
-  setMessages: React.Dispatch<React.SetStateAction<string[]>>
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  selectedPadSide: PadSide
 ) => {
-    deleteProfile(selectedProfile).then(resp => {
+    deleteProfile(selectedProfile[selectedPadSide]).then(resp => {
       addMessageToLog(resp.message, messages, setMessages);
       if (resp.success) {
-        const newProfilesList = profiles.filter(profile => profile.id !== selectedProfile.id);
+        const newProfilesList = profiles.filter(profile => profile.id !== selectedProfile[selectedPadSide].id);
         setProfiles(newProfilesList);
-        setSelectedProfile(newProfilesList[0]);
-        setThresholds(newProfilesList[0].values);
+        
+        /* profile.id = 1 will always exist for P1, profile.id = 2 will always exist for P2 */
+        const newSelectedProfile = profiles.find(profile => profile.id == selectedPadSide)!;
+        const updatedSelectedProfiles = {...selectedProfile};
+        updatedSelectedProfiles[selectedPadSide] = newSelectedProfile;
+        setSelectedProfile(updatedSelectedProfiles);
+        setThresholds(newSelectedProfile.values);
       }
   })
 };
@@ -284,30 +312,35 @@ const handleProfileDelete = (
 const handleProfileSelect = (
   e: React.ChangeEvent<HTMLSelectElement>,
   profiles: Profile[],
-  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
-  setThresholds: React.Dispatch<React.SetStateAction<number[]>>) => {
+  selectedProfile: SelectedProfileState,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<SelectedProfileState>>,
+  setThresholds: React.Dispatch<React.SetStateAction<number[]>>,
+  selectedPadSide: PadSide) => {
     const profile = profiles.find(profile => profile.id === parseInt(e.target.value))!;
-    setSelectedProfile(profile);
+    const newSelectedProfile = {...selectedProfile};
+    newSelectedProfile[selectedPadSide] = profile;
+    setSelectedProfile(newSelectedProfile);
     setThresholds(profile.values);
 }
 
 const handleProfileSave = (
   profiles: Profile[],
   setProfiles: React.Dispatch<React.SetStateAction<Profile[]>>,
-  selectedProfile: Profile,
-  setSelectedProfile: React.Dispatch<React.SetStateAction<Profile>>,
+  selectedProfile: SelectedProfileState,
+  setSelectedProfile: React.Dispatch<React.SetStateAction<SelectedProfileState>>,
   thresholds: number[], 
   messages: string[], 
-  setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    const updatedProfile = {...selectedProfile};
-    updatedProfile.values = thresholds;
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  selectedPadSide: PadSide) => {
+    const updatedProfiles = {...selectedProfile};
+    updatedProfiles[selectedPadSide].values = thresholds;
 
-    updateProfile(updatedProfile).then(resp => {
+    updateProfile(updatedProfiles[selectedPadSide]).then(resp => {
       const updatedProfileList = [...profiles];
-      const profileIndex = profiles.findIndex(profile => profile.id === updatedProfile.id)!;
-      updatedProfileList.splice(profileIndex, 1, updatedProfile);
+      const profileIndex = profiles.findIndex(profile => profile.id === updatedProfiles[selectedPadSide].id)!;
+      updatedProfileList.splice(profileIndex, 1, updatedProfiles[selectedPadSide]);
 
-      setSelectedProfile(updatedProfile);
+      setSelectedProfile(updatedProfiles);
       setProfiles(updatedProfileList);
       addMessageToLog(resp.message, messages, setMessages);
     });
@@ -349,7 +382,9 @@ const PlusMinusButtons = (
 
 const PadSideSelector = (
   selectedPadSide: PadSide,
-  setSelectedPadSide: React.Dispatch<React.SetStateAction<PadSide>>) => {
+  setSelectedPadSide: React.Dispatch<React.SetStateAction<PadSide>>,
+  selectedProfile: SelectedProfileState,
+  setThresholds: React.Dispatch<React.SetStateAction<number[]>>) => {
     return (
       <div className="PadSideSelector">
         <header className="App-header">
@@ -361,7 +396,7 @@ const PadSideSelector = (
             value={PadSide.P1} 
             name="padSide"
             checked={selectedPadSide === PadSide.P1} 
-            onChange={e => handlePadSideChange(e, setSelectedPadSide)}
+            onChange={e => handlePadSideChange(e, setSelectedPadSide, selectedProfile, setThresholds)}
           /> 
           P1
         </label>
@@ -372,7 +407,7 @@ const PadSideSelector = (
             name="padSide"
             value={PadSide.P2} 
             checked={selectedPadSide === PadSide.P2}
-            onChange={e => handlePadSideChange(e, setSelectedPadSide)}
+            onChange={e => handlePadSideChange(e, setSelectedPadSide, selectedProfile, setThresholds)}
           /> 
           P2
         </label> 
@@ -382,9 +417,14 @@ const PadSideSelector = (
 
 const handlePadSideChange = (
   e: React.ChangeEvent<HTMLInputElement>,
-  setSelectedPadSide: React.Dispatch<React.SetStateAction<PadSide>>) => {
-    setSelectedPadSide(parseInt(e.target.value));
+  setSelectedPadSide: React.Dispatch<React.SetStateAction<PadSide>>,
+  selectedProfile: SelectedProfileState,
+  setThresholds: React.Dispatch<React.SetStateAction<number[]>>) => {
+    const newPadSide: PadSide = parseInt(e.target.value)
+    setSelectedPadSide(newPadSide);
+    setThresholds(selectedProfile[newPadSide].values);
 };
+
 const handleLowerThreshold = (
   e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   arrow: Arrows,
@@ -467,7 +507,12 @@ function App() {
   const [thresholds, setThresholds] = useState<number[]>([]);
   const [messages, setMessages] = useState<string[]>([]);
   const [selectedPadSide, setSelectedPadSide] = useState<PadSide>(DEFAULT_PAD_SIDE);
-  const [selectedProfile, setSelectedProfile] = useState<Profile>(new Profile(0, 'Invalid Profile', []));
+  const [selectedProfile, setSelectedProfile] = useState<SelectedProfileState>(
+    new SelectedProfileState(
+      new Profile(0, 'Invalid Profile', []), 
+      new Profile(0, 'Invalid Profile', [])
+    )
+  );
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [profileControlStatus, setProfileControlStatus] = useState<ProfileControlStatus>(ProfileControlStatus.NONE);
   const [updatedName, setUpdatedName] = useState<string>("");
@@ -475,7 +520,7 @@ function App() {
 
   useEffect(() => {
     getInitialLoad().then(resp => {
-      setSelectedProfile(resp.p1.profile);
+      setSelectedProfile(new SelectedProfileState(resp.p1.profile, resp.p2.profile));
       setThresholds(resp.p1.profile.values);
       setProfiles(resp.profiles);
     });
@@ -491,7 +536,7 @@ function App() {
 
   return (    
     <div className="App">
-      {PadSideSelector(selectedPadSide, setSelectedPadSide)}
+      {PadSideSelector(selectedPadSide, setSelectedPadSide, selectedProfile, setThresholds)}
       <div className="grid">
         <div className="grid__item" />
         {PerArrowSensitivityInput(Arrows.UP, thresholds, setThresholds)}
@@ -503,7 +548,8 @@ function App() {
           selectedProfile, setSelectedProfile,
           messages, setMessages,
           profileControlStatus, setProfileControlStatus,
-          updatedName, setUpdatedName
+          updatedName, setUpdatedName,
+          selectedPadSide
         )}
         {PerArrowSensitivityInput(Arrows.RIGHT, thresholds, setThresholds)}
         <div className="grid__item" />
@@ -514,7 +560,7 @@ function App() {
         className="apiButton"
         onClick={async () => {
           setIsLoading(true);
-          await handleSetThresholds(selectedProfile, thresholds, messages, setMessages);
+          await handleSetThresholds(selectedProfile[selectedPadSide], thresholds, messages, setMessages);
           setIsLoading(false);
         }}
         disabled={isLoading}

@@ -102,3 +102,12 @@ export class Profile {
     values: number[];
 }
 
+export class SelectedProfileState {
+    constructor(p1: Profile, p2: Profile) {
+        this[PadSide.P1] = p1;
+        this[PadSide.P2] = p2;
+    }
+    [PadSide.P1]: Profile;
+    [PadSide.P2]: Profile;
+}
+
