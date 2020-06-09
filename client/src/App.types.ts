@@ -59,12 +59,12 @@ export class InitialLoadResponse implements IApiResponse {
 }
 
 export class SetThresholdsOnPadRequest {
-    constructor(padId: number, profile: Profile, values: number[]) {
-        this.padId = padId;
+    constructor(padSide: PadSide, profile: Profile, values: number[]) {
+        this.padSide = padSide;
         this.profile = profile;
         this.values = values;
     }
-    padId: number;
+    padSide: PadSide;
     profile: Profile;
     values: number[];
 }

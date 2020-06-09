@@ -470,16 +470,18 @@ const getPerArrowInputName = (arrow: Arrows):string => {
 
 const handleGetPressures = async (
   messages: string[],
-  setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    await getPressures().then(resp => 
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  selectedPadSide: PadSide) => {
+    await getPressures(selectedPadSide).then(resp => 
       addMessageToLog(resp.message, messages, setMessages)
     );
 }
 
 const handleGetThresholds = async (
   messages: string[],
-  setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    await getThresholds().then(resp => 
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  selectedPadSide: PadSide) => {
+    await getThresholds(selectedPadSide).then(resp => 
       addMessageToLog(resp.message, messages, setMessages)
     );
 }
@@ -488,8 +490,9 @@ const handleSetThresholds = async (
   selectedProfile: Profile,
   thresholds: number[],
   messages: string[],
-  setMessages: React.Dispatch<React.SetStateAction<string[]>>) => {
-    await setThresholdsOnPad(DEFAULT_PAD_SIDE, selectedProfile, thresholds).then(resp =>
+  setMessages: React.Dispatch<React.SetStateAction<string[]>>,
+  selectedPadSide: PadSide) => {
+    await setThresholdsOnPad(selectedPadSide, selectedProfile, thresholds).then(resp =>
       addMessageToLog(resp.message, messages, setMessages)
     );
 }
@@ -560,7 +563,7 @@ function App() {
         className="apiButton"
         onClick={async () => {
           setIsLoading(true);
-          await handleSetThresholds(selectedProfile[selectedPadSide], thresholds, messages, setMessages);
+          await handleSetThresholds(selectedProfile[selectedPadSide], thresholds, messages, setMessages, selectedPadSide);
           setIsLoading(false);
         }}
         disabled={isLoading}
@@ -572,7 +575,7 @@ function App() {
         className="apiButton"
         onClick={async () => {
           setIsLoading(true);
-          await handleGetPressures(messages, setMessages);
+          await handleGetPressures(messages, setMessages, selectedPadSide);
           setIsLoading(false);
         }}
         disabled={isLoading}
@@ -583,7 +586,7 @@ function App() {
         className="apiButton"
         onClick={async () => {
           setIsLoading(true);
-          await handleGetThresholds(messages, setMessages);
+          await handleGetThresholds(messages, setMessages, selectedPadSide);
           setIsLoading(false);
         }}
         disabled={isLoading}

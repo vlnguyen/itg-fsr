@@ -7,14 +7,20 @@ from sqlite3 import Error
 # Constants
 SERVER_PORT = 5555
 SERVER_HOST = '0.0.0.0'
-P1_PORT = "COM5"
-P2_PORT = "COM3"
+P1_PORT = "COM3"
+P2_PORT = "COM6"
 
 # Initialize app
 app = Flask(__name__)
 CORS(app)
 
 # Initialize serial
+serial_p1 = serial.Serial()
+serial_p1.port = P1_PORT
+serial_p1.baudrate = 9600
+serial_p1.setDTR(False)
+serial_p1.open()
+
 serial_p2 = serial.Serial()
 serial_p2.port = P2_PORT
 serial_p2.baudrate = 9600
@@ -69,26 +75,35 @@ def set_thresholds():
     success = False
 
     req_data = request.get_json()
-    try:
-        # Serial input to the controller to apply new thresholds
-        values = ','.join(str(x) for x in request.get_json()['values']) + '\n'
-        serial_p2.write(values.encode())
-        # Serial call to get the current thresholds back
-        serial_p2.write("thresholds".encode())
-        serial_response = f'New Thresholds: {serial_p2.readline().decode().strip()}'
+    pad_side = int(req_data['padSide'])
 
-        # Update the pad to associate with given profile
-        conn = db_create_connection()
-        success = db_update_pad_by_id(conn, req_data['padId'], req_data['profile']['id'])
-        conn.close()
+    if pad_side == 1 or pad_side == 2:
+        try:
+            if pad_side == 1:
+                serial = serial_p1
+            else:
+                serial = serial_p2
+            # Serial input to the controller to apply new thresholds
+            values = ','.join(str(x) for x in request.get_json()['values']) + '\n'
+            serial.write(values.encode())
+            # Serial call to get the current thresholds back
+            serial.write("thresholds".encode())
+            serial_response = f'New Thresholds: {serial.readline().decode().strip()}'
 
-        if success:
-            message = f"Applied profile: {req_data['profile']['name']} ({serial_response})"
-        else:
-            message = f'Could not apply profile to pad. Check current thresholds.'
-    except Exception as e:
-        message = str(e),
-        success = False
+            # Update the pad to associate with given profile
+            conn = db_create_connection()
+            success = db_update_pad_by_id(conn, pad_side, req_data['profile']['id'])
+            conn.close()
+
+            if success:
+                message = f"Applied P{pad_side} profile: {req_data['profile']['name']} ({serial_response})"
+            else:
+                message = f'Could not apply profile to pad. Check current thresholds.'
+        except Exception as e:
+            message = str(e),
+            success = False
+    else:
+        message = 'Must specify pad side 1 or 2.'
 
     return {
         'message': message,
@@ -101,14 +116,23 @@ def get_thresholds():
     message = ''
     values = []
     success = False
-    try:
-        serial_p2.write("thresholds".encode())
-        s_resp = serial_p2.readline().decode().strip()
-        message = "Current Thresholds: " + s_resp
-        values = [int(x) for x in s_resp.split(',')]
-        success = True
-    except Exception as e:
-        message = str(e)
+
+    pad_side = int(request.args.get('padSide'))
+    if pad_side == 1 or pad_side == 2:
+        try:
+            if pad_side == 1:
+                serial = serial_p1
+            else:
+                serial = serial_p2
+            serial.write("thresholds".encode())
+            s_resp = serial.readline().decode().strip()
+            message = f"P{pad_side} Thresholds: {s_resp}"
+            values = [int(x) for x in s_resp.split(',')]
+            success = True
+        except Exception as e:
+            message = str(e)
+    else:
+        message = 'Must specify pad side 1 or 2.'
 
     return {
         'message': message,
@@ -121,12 +145,21 @@ def get_thresholds():
 def get_pressures():
     message = ''
     success = False
-    try:
-        serial_p2.write("pressures".encode())
-        message = 'Current pressures: ' + serial_p2.readline().decode().strip()
-        success = True
-    except Exception as e:
-        message = str(e)
+    
+    pad_side = int(request.args.get('padSide'))
+    if pad_side == 1 or pad_side == 2: 
+        try:
+            if pad_side == 1:
+                serial = serial_p1
+            if pad_side == 2:
+                serial = serial_p2
+            serial.write("pressures".encode())
+            message = f'P{pad_side} pressures: {serial.readline().decode().strip()}'
+            success = True
+        except Exception as e:
+            message = str(e)
+    else:
+        message = 'Must specify pad side 1 or 2.'
 
     return {
         'message': message,
@@ -187,7 +220,6 @@ def update_profile():
 @app.route('/profiles', methods=['PUT'])
 def add_profile():
     req_data = request.get_json()
-    print(req_data)
     profile = {
         'id': 0,
         'name': '',

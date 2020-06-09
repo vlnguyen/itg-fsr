@@ -1,4 +1,4 @@
-import { InitialLoadResponse, Profile, IApiResponse, SetThresholdsOnPadRequest, CreateNewProfileResponse as CreateProfileResponse } from "./App.types";
+import { InitialLoadResponse, Profile, IApiResponse, SetThresholdsOnPadRequest, CreateNewProfileResponse as CreateProfileResponse, PadSide } from "./App.types";
 import { SERVER_URL, SERVER_PORT, DEFAULT_PAD_SIDE } from "./App.constants";
 
 export async function getInitialLoad():Promise<InitialLoadResponse> {
@@ -14,9 +14,9 @@ export async function getInitialLoad():Promise<InitialLoadResponse> {
     throw Error("Could not fetch initial load.");
 }
 
-export async function getPressures():Promise<IApiResponse> {
+export async function getPressures(selectedPadSide: PadSide):Promise<IApiResponse> {
     let getPressuresResponse: IApiResponse | null = null;
-    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/pressures`)
+    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/pressures?padSide=${selectedPadSide}`)
         .then(resp => resp.json())
         .then(data => {
             getPressuresResponse = {
@@ -30,9 +30,9 @@ export async function getPressures():Promise<IApiResponse> {
     throw Error("Could not get current pressures.");
 }
 
-export async function getThresholds():Promise<IApiResponse> {
+export async function getThresholds(padSide: PadSide):Promise<IApiResponse> {
     let getThresholdsResponse: IApiResponse | null = null;
-    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds`)
+    await fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds?padSide=${padSide}`)
         .then(resp => resp.json())
         .then(data => {
             getThresholdsResponse = {
@@ -46,7 +46,7 @@ export async function getThresholds():Promise<IApiResponse> {
     throw Error("Could not get current thresholds");
 }
 
-export async function setThresholdsOnPad(padId: number, selectedProfile: Profile, thresholds: number[]): Promise<IApiResponse> {
+export async function setThresholdsOnPad(selectedPadSide: PadSide, selectedProfile: Profile, thresholds: number[]): Promise<IApiResponse> {
     let setThresholdsOnPadResponse: IApiResponse | null = null;
     const postBody = {
         method: 'POST',
@@ -54,7 +54,7 @@ export async function setThresholdsOnPad(padId: number, selectedProfile: Profile
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(
-            new SetThresholdsOnPadRequest(DEFAULT_PAD_SIDE, selectedProfile, thresholds)
+            new SetThresholdsOnPadRequest(selectedPadSide, selectedProfile, thresholds)
         )
     };
     await fetch(`http://${SERVER_URL}:${SERVER_PORT}/thresholds`, postBody)
