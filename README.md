@@ -34,5 +34,5 @@ A Force Sensitive Resistor (FSR) is a resistor that changes its resistive value 
   - A simple web application gives users an interface for adjusting the controller sensitivity and for loading or saving sensor thresholds on personal profiles.<p><img src="img/client.jpg" height="500px" /></p>
 
 ## Credits
-- Thank you [teejusb](github.com/teejusb)! He contributed what I used as a base for the hardware code. It was super easy understand and extend for my own use. ([teejusb/fsr](https://github.com/teejusb/fsr))
+- Thank you [teejusb](https://github.com/teejusb)! He contributed what I used as a base for the hardware code. It was super easy understand and extend for my own use. ([teejusb/fsr](https://github.com/teejusb/fsr))
   
