@@ -19,7 +19,7 @@ A Force Sensitive Resistor (FSR) is a resistor that changes its resistive value 
   - There's basically no need to open up the pad and work underneath the panels anymore.
 - **Reliability, Consistency**
   - Traditional contact sensors wear down and can be different in quality between manufacturers or even within batches.
-  - FSRs can combat changes over time due to the fact that 
+  - FSRs can combat consistency over time since players can adjust their sensor thresholds as the sensors get continued use.
 
 ## High-level Design
 - **Hardware (Arduino Leonardo)**
