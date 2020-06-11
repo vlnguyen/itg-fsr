@@ -96,6 +96,7 @@ const ProfileControlsDefaultState = (
           messages, setMessages,
           selectedPadSide
         )}
+        tabIndex={Arrows.RIGHT + 2}
         disabled={thresholds.toString() === selectedProfile[selectedPadSide].values.toString()}
       >
         Save to Profile
@@ -357,6 +358,7 @@ const PerArrowSensitivityInput = (
           type="number"
           name={getPerArrowInputName(arrow)}
           value={thresholds[arrow]}
+          tabIndex={arrow + 1}
           onChange={e => {
             const newThresholds = [...thresholds];
             newThresholds[arrow] = parseInt(e.target.value);

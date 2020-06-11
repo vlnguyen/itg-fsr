@@ -7,8 +7,8 @@ from sqlite3 import Error
 # Constants
 SERVER_PORT = 5555
 SERVER_HOST = '0.0.0.0'
-P1_PORT = "COM3"
-P2_PORT = "COM6"
+P1_PORT = "COM5"
+P2_PORT = "COM3"
 
 # Initialize app
 app = Flask(__name__)
@@ -154,7 +154,7 @@ def get_pressures():
             if pad_side == 2:
                 serial = serial_p2
             serial.write("pressures".encode())
-            message = f'P{pad_side} pressures: {serial.readline().decode().strip()}'
+            message = f'P{pad_side} Pressures: {serial.readline().decode().strip()}'
             success = True
         except Exception as e:
             message = str(e)
