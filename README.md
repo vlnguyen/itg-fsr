@@ -13,7 +13,7 @@ A Force Sensitive Resistor (FSR) is a resistor that changes its resistive value 
   - Unlike contact sensors which are only ON or OFF, we can determine whether a panel is activated by defining a variable actuation threshold on each individual sensor.
 - **User Profiles**
   - Save thresholds to a personal user profile that can be loaded and applied on the fly.
-  - Accomodate a wider range of foot sizes, shapes, body weights, and play styles.
+  - Accommodate a wider range of foot sizes, shapes, body weights, and play styles.
 - **Remote Pad Maintenance**
   - Set the sensor thresholds through a web app that can be loaded on your phone.
   - There's basically no need to open up the pad and work underneath the panels anymore.
