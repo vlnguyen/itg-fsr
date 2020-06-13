@@ -288,6 +288,40 @@ def delete_profile():
     }
 
 
+@app.route('/pads', methods=['GET'])
+def get_all_pads():
+    conn = db_create_connection()
+
+    success = True
+
+    pad_id = request.args.get('id')
+    if pad_id:
+        pads = db_select_pad_by_id(conn, pad_id)
+        if not pads:
+            message = f'No pad found with id = {pad_id}.'
+            success = False
+        else:
+            message = f'Retrieved pad: {pads[0][1]}.'
+    else:
+        pads = db_select_all_pads(conn)
+        message = "Retrieved all pads."
+    conn.close()
+
+    return {
+        'message': message,
+        'success': success,
+        'pads': [
+            {
+                'id': pad[0],
+                'name': pad[1],
+                'profileId': pad[2],
+                'thresholds': pad[5:]
+            }
+            for pad in pads
+        ]
+    }
+
+
 # Database functions
 def db_create_connection():
     """ create a database connection to a SQLite database """
