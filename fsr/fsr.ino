@@ -83,6 +83,11 @@ class SensorState {
 /*===========================================================================*/
 
 // Defines the sensor collections and sets the pins for them appropriately.
+/* When setting sensor states, I've made an implication that the pin order
+ * will match how the arrows appear on screen (0: Left, 1: Down, 2: Up, 3: Right).
+ * This is only important if you intend on using the web app to control the
+ * sensor thresholds, which expects the sensor states in that order.
+*/
 SensorState kSensorStates[] = {
     SensorState(A0, 0),
     SensorState(A1, 0),
