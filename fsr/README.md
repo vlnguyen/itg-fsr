@@ -132,7 +132,7 @@ There were options for where the controller was placed.
 
 For both of those options, if your pad's original I/O is still there then you may not be able to fit your controller there. You could remove the original pad I/O or attempt to house it under another panel. It's possible to house it under the center panel, just be aware that it will have a long cable from to connect to your PC.
 
-For ITG dedicab pads still using the PIUIO, keeping the PIUIO will allow FSRs to support pad lights since that's actually controlled by Stepmania. This is not possible if your pad is runninga BARR-IO.
+For ITG dedicab pads still using the PIUIO, keeping the PIUIO will allow FSRs to support pad lights since that's actually controlled by Stepmania. This is not possible if your pad is running a BARR-IO.
 <p align="center">
   <img src="img/IMG_4168.jpg" width="450px"/>
   <img src="img/IMG_4172.jpg" width="450px"/>
