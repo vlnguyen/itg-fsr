@@ -196,7 +196,7 @@ If you didn't plug the sensors to the Arudino in this order, you can either swap
 Plugging the sensors into the Arudino in that order is is only important if you intend on using the web app that I wrote to adjust sensitivities; the app is not necessary at all to do that.
 
 ### Flashing the Arudino
-Next I loaded up the Arudino IDE and uploaded the [fsr.ino](https://github.com/vlnguyen/itg-fsr/blob/master/fsr/fsr.ino) code to my Arduino.
+Next I installed [ArduinoJoystickLibrary](https://github.com/MHeironimus/ArduinoJoystickLibrary#installation-instructions), loaded up the Arudino IDE and uploaded the [fsr.ino](https://github.com/vlnguyen/itg-fsr/blob/master/fsr/fsr.ino) code to my Arduino.
 
 In Stepmania, in the `Configure Keyboard/Pad Mappings` options, I can bind the panel inputs to respective arrows. If Stepmania picks up the mappings then everything's good to go! If not something either went wrong with the circuit or with uploading the code.
 
